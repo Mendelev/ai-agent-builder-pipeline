@@ -1,0 +1,56 @@
+# backend/pyproject.toml
+[tool.poetry]
+name = "requirements-manager"
+version = "1.0.0"
+description = "Requirements management system with FastAPI, LangGraph, and Celery"
+authors = ["Engineering Team"]
+python = "^3.12"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.32.0"}
+sqlalchemy = "^2.0.35"
+alembic = "^1.13.3"
+psycopg = {extras = ["binary"], version = "^3.2.3"}
+pydantic = "^2.9.2"
+pydantic-settings = "^2.6.1"
+redis = "^5.2.0"
+celery = {extras = ["redis"], version = "^5.4.0"}
+langgraph = "^0.2.50"
+structlog = "^24.4.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+httpx = "^0.27.2"
+opentelemetry-api = "^1.28.2"
+opentelemetry-sdk = "^1.28.2"
+opentelemetry-instrumentation-fastapi = "^0.49b2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^6.0.0"
+ruff = "^0.8.2"
+mypy = "^1.13.0"
+black = "^24.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
