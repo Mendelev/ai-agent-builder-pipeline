@@ -32,3 +32,19 @@ make dev-down
 
 # Limpar cache
 make clean
+
+
+
+----------------
+
+# Aplicar nova migration
+make db-migrate
+
+# Executar testes do plano
+python -m pytest tests/test_plan_api.py tests/test_plan_service.py -v
+
+# Testar API completa
+make test
+
+# Verificar linting
+make lint
