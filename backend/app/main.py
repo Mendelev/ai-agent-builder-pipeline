@@ -1,10 +1,11 @@
-# backend/app/main.py
+# backend/app/main.py (update)
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from prometheus_client import make_asgi_app
+from prometheus_client import make_asgi_app, generate_latest, CONTENT_TYPE_LATEST
 from app.core import settings, setup_logging, CorrelationIdMiddleware
-from app.api.v1 import requirements
+from app.api.v1 import requirements, plan, prompts, orchestration
+from app.middleware.tracing import setup_tracing
 import time
 
 # Setup structured logging
@@ -17,6 +18,9 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc"
 )
+
+# Setup OpenTelemetry tracing
+setup_tracing(app)
 
 # Size limit middleware
 @app.middleware("http")
@@ -43,11 +47,16 @@ app.add_middleware(
 )
 
 # Mount Prometheus metrics
-metrics_app = make_asgi_app()
-app.mount("/metrics", metrics_app)
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 # Include routers
 app.include_router(requirements.router, prefix=settings.API_V1_PREFIX)
+app.include_router(plan.router, prefix=settings.API_V1_PREFIX)
+app.include_router(prompts.router, prefix=settings.API_V1_PREFIX)
+app.include_router(orchestration.router, prefix=settings.API_V1_PREFIX)
 
 @app.get("/health")
 async def health_check():
@@ -64,5 +73,6 @@ async def root():
     return {
         "service": "Requirements Manager API",
         "version": "1.0.0",
-        "docs": "/api/docs"
+        "docs": "/api/docs",
+        "metrics": "/metrics"
     }
