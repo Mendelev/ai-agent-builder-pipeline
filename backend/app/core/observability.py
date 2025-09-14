@@ -8,6 +8,20 @@ from contextvars import ContextVar
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 import structlog
+from prometheus_client import Histogram, Counter
+
+# Metrics
+request_duration = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request duration in seconds',
+    ['method', 'endpoint', 'status']
+)
+
+agent_duration = Histogram(
+    'agent_duration_seconds',
+    'Agent task duration in seconds',
+    ['task']
+)
 
 correlation_id_var: ContextVar[Optional[str]] = ContextVar('correlation_id', default=None)
 
@@ -40,6 +54,13 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
         
         response.headers["X-Correlation-ID"] = correlation_id
         response.headers["X-Process-Time"] = str(process_time)
+        
+        # Metrics
+        request_duration.labels(
+            method=request.method,
+            endpoint=request.url.path,
+            status=response.status_code
+        ).observe(process_time)
         
         logger = structlog.get_logger()
         logger.info(

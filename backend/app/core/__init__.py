@@ -1,7 +1,7 @@
 # backend/app/core/__init__.py
 from .config import settings
 from .database import get_db, Base, SessionLocal
-from .observability import setup_logging, CorrelationIdMiddleware, get_logger
+from .observability import setup_logging, CorrelationIdMiddleware, get_logger, agent_duration
 
 __all__ = [
     "settings",
@@ -10,5 +10,6 @@ __all__ = [
     "SessionLocal",
     "setup_logging",
     "CorrelationIdMiddleware",
-    "get_logger"
+    "get_logger",
+    "agent_duration"
 ]

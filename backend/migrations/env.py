@@ -33,7 +33,6 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    # Override with environment variable if set
     database_url = os.getenv("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = database_url
@@ -46,7 +45,8 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, 
+            target_metadata=target_metadata
         )
 
         with context.begin_transaction():

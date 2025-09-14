@@ -1,8 +1,9 @@
 # backend/app/schemas/requirement.py
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
 from typing import List, Optional, Dict, Any, Literal
 from datetime import datetime
 from uuid import UUID
+import sys
 
 class RequirementBase(BaseModel):
     key: str = Field(..., max_length=50, pattern=r'^[A-Z0-9_-]+$')
@@ -43,15 +44,17 @@ class RequirementResponse(RequirementBase):
 class RequirementBulkCreate(BaseModel):
     requirements: List[RequirementCreate] = Field(..., max_length=1000)
     
-    @field_validator('requirements')
-    @classmethod
-    def validate_payload_size(cls, v):
-        # Rough estimation: 1KB per requirement average
-        if len(v) > 100:
+    @model_validator(mode='after')
+    def validate_payload_size(self):
+        # Rough estimation of payload size
+        total_size = sys.getsizeof(self.model_dump_json())
+        if total_size > 100 * 1024 * 1024:  # 100MB
+            raise ValueError('Payload exceeds 100MB limit')
+        if len(self.requirements) > 100:
             raise ValueError('Maximum 100 requirements per bulk operation')
-        return v
+        return self
 
-class RequirementQuestion(BaseModel):
+class RequirementQuestionSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
     id: UUID
@@ -62,7 +65,7 @@ class RequirementQuestion(BaseModel):
     created_at: datetime
     answered_at: Optional[datetime] = None
 
-class RequirementIteration(BaseModel):
+class RequirementIterationSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
     id: UUID

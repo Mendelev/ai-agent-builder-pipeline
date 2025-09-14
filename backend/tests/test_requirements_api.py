@@ -1,9 +1,10 @@
 # backend/tests/test_requirements_api.py
 import pytest
+import json
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from app.models import Project, Requirement, ProjectStatus
-import json
+from unittest.mock import patch, MagicMock
 
 def test_create_requirements_bulk(client: TestClient, sample_project: Project, sample_requirements_data):
     """Test bulk create requirements."""
@@ -14,10 +15,10 @@ def test_create_requirements_bulk(client: TestClient, sample_project: Project, s
     
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 2
+    assert len(data) == 3
     assert data[0]["key"] == "REQ-001"
     assert data[0]["priority"] == "high"
-    assert len(data[0]["acceptance_criteria"]) == 3
+    assert len(data[0]["acceptance_criteria"]) == 4
 
 def test_create_requirements_validation_error(client: TestClient, sample_project: Project):
     """Test requirements validation."""
@@ -34,22 +35,42 @@ def test_create_requirements_validation_error(client: TestClient, sample_project
     
     assert response.status_code == 422
 
+def test_create_requirements_payload_limit(client: TestClient, sample_project: Project):
+    """Test payload size limit."""
+    # Create 101 requirements (exceeds limit)
+    huge_data = [
+        {
+            "key": f"REQ-{i:03d}",
+            "title": f"Requirement {i}",
+            "priority": "medium"
+        }
+        for i in range(101)
+    ]
+    
+    response = client.post(
+        f"/api/v1/projects/{sample_project.id}/requirements",
+        json={"requirements": huge_data}
+    )
+    
+    assert response.status_code == 422
+    assert "Maximum 100 requirements" in response.json()["detail"][0]["msg"]
+
 def test_list_requirements(client: TestClient, sample_project: Project, sample_requirements_data):
     """Test listing requirements."""
-    # First create requirements
+    # Create requirements
     client.post(
         f"/api/v1/projects/{sample_project.id}/requirements",
         json={"requirements": sample_requirements_data}
     )
     
-    # Then list them
+    # List them
     response = client.get(f"/api/v1/projects/{sample_project.id}/requirements")
     
     assert response.status_code == 200
     data = response.json()
-    assert len(data) == 2
+    assert len(data) == 3
     assert any(req["key"] == "REQ-001" for req in data)
-    assert any(req["key"] == "REQ-002" for req in data)
+    assert any(req["key"] == "REQ-003" for req in data)
 
 def test_export_json(client: TestClient, sample_project: Project, sample_requirements_data):
     """Test JSON export."""
@@ -63,10 +84,12 @@ def test_export_json(client: TestClient, sample_project: Project, sample_require
     response = client.get(f"/api/v1/projects/{sample_project.id}/requirements/export?format=json")
     
     assert response.status_code == 200
+    assert "application/json" in response.headers["content-type"]
     data = response.json()
     assert "requirements" in data
-    assert len(data["requirements"]) == 2
+    assert len(data["requirements"]) == 3
     assert "exported_at" in data
+    assert data["total"] == 3
 
 def test_export_markdown(client: TestClient, sample_project: Project, sample_requirements_data):
     """Test Markdown export."""
@@ -80,10 +103,11 @@ def test_export_markdown(client: TestClient, sample_project: Project, sample_req
     response = client.get(f"/api/v1/projects/{sample_project.id}/requirements/export?format=md")
     
     assert response.status_code == 200
-    assert response.headers["content-type"] == "text/markdown; charset=utf-8"
+    assert "text/markdown" in response.headers["content-type"]
     content = response.text
-    assert "# Requirements" in content
+    assert "# Requirements Export" in content
     assert "REQ-001" in content
+    assert "Critical Priority" in content
     assert "High Priority" in content
 
 def test_finalize_requirements(client: TestClient, sample_project: Project, sample_requirements_data, db_session: Session):
@@ -94,7 +118,7 @@ def test_finalize_requirements(client: TestClient, sample_project: Project, samp
         json={"requirements": sample_requirements_data}
     )
     
-    # Mark requirements as coherent
+    # Mark all as coherent
     requirements = db_session.query(Requirement).filter(Requirement.project_id == sample_project.id).all()
     for req in requirements:
         req.is_coherent = True
@@ -109,17 +133,41 @@ def test_finalize_requirements(client: TestClient, sample_project: Project, samp
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
+    assert data["forced"] is False
     
     # Check project status
     db_session.refresh(sample_project)
     assert sample_project.status == ProjectStatus.REQS_READY
 
-def test_finalize_requirements_not_coherent(client: TestClient, sample_project: Project, sample_requirements_data):
-    """Test finalize fails when requirements not coherent."""
-    # Create requirements (not coherent by default)
+def test_finalize_requirements_force(client: TestClient, sample_project: Project, sample_requirements_data):
+    """Test force finalize."""
+    # Create requirements (not coherent)
     client.post(
         f"/api/v1/projects/{sample_project.id}/requirements",
         json={"requirements": sample_requirements_data}
+    )
+    
+    # Force finalize
+    response = client.post(
+        f"/api/v1/projects/{sample_project.id}/requirements/finalize",
+        json={"force": True}
+    )
+    
+    assert response.status_code == 200
+    assert response.json()["forced"] is True
+
+def test_finalize_requirements_validation_failures(client: TestClient, sample_project: Project):
+    """Test finalize validation."""
+    # Create requirement with circular dependency
+    circular_reqs = [
+        {"key": "A", "title": "A", "dependencies": ["B"]},
+        {"key": "B", "title": "B", "dependencies": ["C"]},
+        {"key": "C", "title": "C", "dependencies": ["A"]}
+    ]
+    
+    client.post(
+        f"/api/v1/projects/{sample_project.id}/requirements",
+        json={"requirements": circular_reqs}
     )
     
     # Try to finalize
@@ -129,10 +177,14 @@ def test_finalize_requirements_not_coherent(client: TestClient, sample_project: 
     )
     
     assert response.status_code == 400
-    assert "not all requirements are coherent" in response.json()["detail"].lower()
+    assert "circular dependencies" in response.json()["detail"].lower()
 
-def test_refine_requirements(client: TestClient, sample_project: Project, sample_requirements_data):
+@patch('app.workers.tasks.requirements.refine_requirements.apply_async')
+def test_refine_requirements(mock_task, client: TestClient, sample_project: Project, sample_requirements_data):
     """Test queueing refinement job."""
+    # Mock Celery task
+    mock_task.return_value = MagicMock(id="test-task-123")
+    
     # Create requirements
     client.post(
         f"/api/v1/projects/{sample_project.id}/requirements",
@@ -145,10 +197,14 @@ def test_refine_requirements(client: TestClient, sample_project: Project, sample
         json={"context": "Additional context for refinement"}
     )
     
-    # Note: In test environment, Celery might not be running
-    # so we just check the API response
-    assert response.status_code in [200, 500]  # 500 if Celery not running
-    if response.status_code == 200:
-        data = response.json()
-        assert "task_id" in data
-        assert "project_id" in data
+    assert response.status_code == 200
+    data = response.json()
+    assert data["task_id"] == "test-task-123"
+    assert data["project_id"] == str(sample_project.id)
+    assert data["status"] == "pending"
+    
+    # Verify task was called
+    mock_task.assert_called_once_with(
+        args=[str(sample_project.id)],
+        queue='default'
+    )

@@ -11,7 +11,7 @@ from app.main import app
 from app.models import Project, ProjectStatus
 import uuid
 
-# Test database
+# Test database (SQLite in-memory for speed)
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
@@ -42,7 +42,8 @@ def client(db_session: Session) -> TestClient:
             pass
     
     app.dependency_overrides[get_db] = override_get_db
-    yield TestClient(app)
+    with TestClient(app) as test_client:
+        yield test_client
     app.dependency_overrides.clear()
 
 @pytest.fixture
@@ -53,7 +54,7 @@ def sample_project(db_session: Session) -> Project:
         name="Test Project",
         description="A test project for requirements",
         status=ProjectStatus.DRAFT,
-        context="Testing context"
+        context="Testing context for refinement"
     )
     db_session.add(project)
     db_session.commit()
@@ -67,26 +68,39 @@ def sample_requirements_data():
         {
             "key": "REQ-001",
             "title": "User Authentication",
-            "description": "Implement user authentication system",
+            "description": "Implement secure user authentication system with OAuth2 support",
             "priority": "high",
             "acceptance_criteria": [
                 "Users can register with email",
                 "Users can login with credentials",
-                "Password reset functionality"
+                "Password reset functionality works",
+                "OAuth2 integration with Google"
             ],
             "dependencies": [],
-            "metadata": {"category": "security"}
+            "metadata": {"category": "security", "effort": "high"}
         },
         {
             "key": "REQ-002",
             "title": "Dashboard",
-            "description": "Create user dashboard",
+            "description": "Create comprehensive user dashboard",
             "priority": "medium",
             "acceptance_criteria": [
                 "Display user statistics",
                 "Show recent activity"
             ],
             "dependencies": ["REQ-001"],
-            "metadata": {"category": "ui"}
+            "metadata": {"category": "ui", "effort": "medium"}
+        },
+        {
+            "key": "REQ-003",
+            "title": "API Rate Limiting",
+            "description": "Implement rate limiting",
+            "priority": "critical",
+            "acceptance_criteria": [
+                "Limit requests per IP",
+                "Configurable limits"
+            ],
+            "dependencies": [],
+            "metadata": {"category": "security"}
         }
     ]

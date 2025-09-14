@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     API_V1_PREFIX: str = "/api/v1"
     PROJECT_NAME: str = "Requirements Manager"
     DEBUG: bool = Field(default=False, env="DEBUG")
+    MAX_PAYLOAD_SIZE: int = 100 * 1024 * 1024  # 100MB
     
     # Database
     DATABASE_URL: str = Field(

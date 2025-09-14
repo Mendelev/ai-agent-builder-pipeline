@@ -4,8 +4,8 @@ from .requirement import (
     RequirementUpdate,
     RequirementResponse,
     RequirementBulkCreate,
-    RequirementQuestion,
-    RequirementIteration,
+    RequirementQuestionSchema,
+    RequirementIterationSchema,
     RefineRequest,
     FinalizeRequest,
     ExportFormat
@@ -16,8 +16,8 @@ __all__ = [
     "RequirementUpdate",
     "RequirementResponse",
     "RequirementBulkCreate",
-    "RequirementQuestion",
-    "RequirementIteration",
+    "RequirementQuestionSchema",
+    "RequirementIterationSchema",
     "RefineRequest",
     "FinalizeRequest",
     "ExportFormat"
