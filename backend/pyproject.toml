@@ -4,7 +4,7 @@ name = "requirements-manager"
 version = "1.0.0"
 description = "Requirements management system with FastAPI, LangGraph, and Celery"
 authors = ["Engineering Team"]
-python = "^3.12"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -12,7 +12,7 @@ fastapi = "^0.115.0"
 uvicorn = {extras = ["standard"], version = "^0.32.0"}
 sqlalchemy = "^2.0.35"
 alembic = "^1.13.3"
-psycopg = {extras = ["binary"], version = "^3.2.3"}
+psycopg2-binary = "^2.9.9"
 pydantic = "^2.9.2"
 pydantic-settings = "^2.6.1"
 redis = "^5.2.0"

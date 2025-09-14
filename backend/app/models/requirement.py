@@ -17,7 +17,7 @@ class Requirement(Base):
     priority = Column(String(20), nullable=False, default="medium")
     acceptance_criteria = Column(JSONB, default=list)
     dependencies = Column(JSONB, default=list)
-    metadata = Column(JSONB, default=dict)
+    extra_metadata = Column('metadata', JSONB, default=dict)
     is_coherent = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

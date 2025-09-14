@@ -1,5 +1,5 @@
 # backend/app/models/plan.py
-from sqlalchemy import Column, String, Text, Integer, Float, ForeignKey, DateTime, Enum
+from sqlalchemy import Column, String, Text, Integer, Float, Boolean, ForeignKey, DateTime, Enum, Index
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -25,7 +25,7 @@ class Plan(Base):
     use_code = Column(Boolean, default=False)
     include_checklist = Column(Boolean, default=False)
     constraints = Column(JSONB, default=dict)  # {deadline, team_size, nfrs}
-    metadata = Column(JSONB, default=dict)
+    extra_metadata = Column('metadata', JSONB, default=dict)
     total_duration_days = Column(Float, default=0)
     risk_score = Column(Float, default=0)
     coverage_percentage = Column(Float, default=0)

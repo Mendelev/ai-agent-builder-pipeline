@@ -21,27 +21,27 @@ dev-down:
 	docker-compose down
 
 db-migrate:
-	alembic upgrade head
+	poetry run alembic upgrade head
 
 db-rollback:
-	alembic downgrade -1
+	poetry run alembic downgrade -1
 
 test:
-	python -m pytest tests/ -v --cov=app --cov-report=term-missing --cov-report=html
+	poetry run python -m pytest tests/ -v --cov=app --cov-report=term-missing --cov-report=html
 
 lint:
-	ruff check app/ tests/
-	mypy app/ --ignore-missing-imports
+	poetry run ruff check app/ tests/
+	poetry run mypy app/ --ignore-missing-imports
 
 format:
-	black app/ tests/ --line-length 120
-	ruff check app/ tests/ --fix
+	poetry run black app/ tests/ --line-length 120
+	poetry run ruff check app/ tests/ --fix
 
 run-api:
-	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --log-config logging.json
+	poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --log-config logging.json
 
 run-workers:
-	celery -A app.workers.celery_app worker --loglevel=info --pool=prefork --concurrency=4 -Q default
+	poetry run celery -A app.workers.celery_app worker --loglevel=info --pool=prefork --concurrency=4 -Q default
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true

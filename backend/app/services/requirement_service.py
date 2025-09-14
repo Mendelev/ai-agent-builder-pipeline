@@ -148,7 +148,7 @@ class RequirementService:
                     "priority": req.priority,
                     "acceptance_criteria": req.acceptance_criteria,
                     "dependencies": req.dependencies,
-                    "metadata": req.metadata,
+                    "metadata": req.extra_metadata,
                     "is_coherent": req.is_coherent,
                     "created_at": req.created_at.isoformat(),
                     "updated_at": req.updated_at.isoformat()

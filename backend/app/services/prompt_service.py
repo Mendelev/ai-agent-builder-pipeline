@@ -351,8 +351,8 @@ class PromptService:
         prompt.append("## Notes\n")
         prompt.append(f"- Estimated Duration: {phase.estimated_days} days")
         prompt.append(f"- Requirements Coverage: {len(phase.requirements_covered)} requirements")
-        if phase.metadata:
-            for key, value in phase.metadata.items():
+        if phase.extra_metadata:
+            for key, value in phase.extra_metadata.items():
                 prompt.append(f"- {key}: {value}")
         
         return "\n".join(prompt)
@@ -474,7 +474,7 @@ class PromptService:
                         "phase_id": p.phase_id,
                         "title": p.title,
                         "sequence": p.sequence,
-                        "metadata": p.metadata
+                        "metadata": p.extra_metadata
                     }
                     for p in bundle.prompts
                 ]

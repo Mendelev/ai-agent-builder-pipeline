@@ -361,8 +361,8 @@ class PlanService:
         categories = defaultdict(int)
         for req_key in group:
             req = req_map[req_key]
-            if req.metadata and "category" in req.metadata:
-                categories[req.metadata["category"]] += 1
+            if req.extra_metadata and "category" in req.extra_metadata:
+                categories[req.extra_metadata["category"]] += 1
         
         if categories:
             main_category = max(categories, key=categories.get)

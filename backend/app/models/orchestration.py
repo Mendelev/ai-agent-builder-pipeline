@@ -42,7 +42,7 @@ class StateHistory(Base):
     to_state = Column(Enum(ProjectState), nullable=False)
     transition_reason = Column(Text)
     triggered_by = Column(String(100))  # user_id, agent, system
-    metadata = Column(JSONB, default=dict)
+    extra_metadata = Column('metadata', JSONB, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     # Relationships
@@ -87,7 +87,7 @@ class DomainEvent(Base):
     event_name = Column(String(100), nullable=False)
     event_version = Column(Integer, default=1)
     event_data = Column(JSONB, nullable=False)
-    metadata = Column(JSONB, default=dict)
+    extra_metadata = Column('metadata', JSONB, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     processed_at = Column(DateTime, nullable=True)
     
