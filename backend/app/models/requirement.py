@@ -2,7 +2,7 @@
 from sqlalchemy import Column, String, Text, Integer, Boolean, ForeignKey, DateTime, Index, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, UTC
 import uuid
 from app.core.database import Base
 from app.models.types import JsonType
@@ -20,8 +20,8 @@ class Requirement(Base):
     dependencies = Column(JsonType, default=list)
     extra_metadata = Column('metadata', JsonType, default=dict)
     is_coherent = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False)
     
     # Relationships
     project = relationship("Project", back_populates="requirements")
@@ -42,7 +42,7 @@ class RequirementIteration(Base):
     version = Column(Integer, nullable=False)
     changes = Column(JsonType, default=dict)
     created_by = Column(String(255))
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     
     # Relationships
     requirement = relationship("Requirement", back_populates="iterations")
@@ -59,7 +59,7 @@ class RequirementQuestion(Base):
     question = Column(Text, nullable=False)
     answer = Column(Text)
     is_resolved = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     answered_at = Column(DateTime)
     
     # Relationships

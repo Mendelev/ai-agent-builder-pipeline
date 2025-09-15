@@ -2,7 +2,7 @@
 from sqlalchemy import Column, String, Text, Integer, Float, Boolean, ForeignKey, DateTime, Enum, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, UTC
 import uuid
 import enum
 from app.core.database import Base
@@ -30,8 +30,8 @@ class Plan(Base):
     total_duration_days = Column(Float, default=0)
     risk_score = Column(Float, default=0)
     coverage_percentage = Column(Float, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False)
     
     # Relationships
     project = relationship("Project")
@@ -55,7 +55,7 @@ class PlanPhase(Base):
     requirements_covered = Column(JsonType, default=list)  # Requirement keys
     definition_of_done = Column(JsonType, default=list)
     resources_required = Column(JsonType, default=dict)  # {developers: 2, qa: 1}
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     
     # Relationships
     plan = relationship("Plan", back_populates="phases")

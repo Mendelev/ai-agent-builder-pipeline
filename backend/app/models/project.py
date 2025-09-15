@@ -2,7 +2,7 @@
 from sqlalchemy import Column, String, DateTime, Enum, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, UTC
 import uuid
 from app.core.database import Base
 from .enums import ProjectState
@@ -15,8 +15,8 @@ class Project(Base):
     description = Column(Text)
     status = Column(Enum(ProjectState), default=ProjectState.DRAFT, nullable=False)
     context = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False)
     
     # Relationships
     requirements = relationship("Requirement", back_populates="project", cascade="all, delete-orphan")

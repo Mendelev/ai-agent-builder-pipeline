@@ -2,3 +2,13 @@
 .venv
 venv
 __pycache__
+.vscode
+.pytest_cache
+htmlcov
+.coverage
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+instance

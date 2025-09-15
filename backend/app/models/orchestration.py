@@ -2,7 +2,7 @@
 from sqlalchemy import Column, String, Text, Integer, Float, ForeignKey, DateTime, Enum, Boolean, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, UTC
 import uuid
 from app.core.database import Base
 from app.models.types import JsonType
@@ -18,7 +18,7 @@ class StateHistory(Base):
     transition_reason = Column(Text)
     triggered_by = Column(String(100))  # user_id, agent, system
     extra_metadata = Column('metadata', JsonType, default=dict)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     
     # Relationships
     project = relationship("Project")
@@ -42,7 +42,7 @@ class AuditLog(Base):
     duration_ms = Column(Float, nullable=True)
     success = Column(Boolean, default=True)
     error_message = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     
     # Relationships
     project = relationship("Project")
@@ -63,7 +63,7 @@ class DomainEvent(Base):
     event_version = Column(Integer, default=1)
     event_data = Column(JsonType, nullable=False)
     extra_metadata = Column('metadata', JsonType, default=dict)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     processed_at = Column(DateTime, nullable=True)
     
     __table_args__ = (
@@ -81,7 +81,7 @@ class DedupKey(Base):
     input_hash = Column(String(64), nullable=False)  # SHA256 hash
     task_id = Column(String(100), nullable=True)  # Celery task ID
     result = Column(JsonType, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     expires_at = Column(DateTime, nullable=False)
     
     # Relationships

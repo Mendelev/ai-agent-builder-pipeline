@@ -6,7 +6,7 @@ from app.services.state_machine import StateMachine
 from app.models import Project
 from app.models.orchestration import ProjectState, AgentType, DedupKey
 from app.core.redis_client import RedisClient
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from unittest.mock import MagicMock, patch
 import uuid
 
@@ -100,7 +100,7 @@ def test_check_and_get_dedup_existing(db_session: Session, sample_project: Proje
         input_hash=input_hash,
         task_id="existing-task-123",
         result={"status": "completed"},
-        expires_at=datetime.utcnow() + timedelta(hours=1)
+        expires_at=datetime.now(UTC) + timedelta(hours=1)
     )
     db_session.add(existing_dedup)
     db_session.commit()

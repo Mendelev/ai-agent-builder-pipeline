@@ -7,7 +7,7 @@ from app.models import Project, Requirement, RequirementIteration, RequirementQu
 from app.schemas.requirement import RequirementCreate, RequirementUpdate
 from app.core.observability import get_logger
 import json
-from datetime import datetime
+from datetime import datetime, UTC
 
 logger = get_logger(__name__)
 
@@ -156,14 +156,14 @@ class RequirementService:
                 for req in requirements
             ],
             "total": len(requirements),
-            "exported_at": datetime.utcnow().isoformat()
+            "exported_at": datetime.now(UTC).isoformat()
         }
     
     @staticmethod
     def export_markdown(requirements: List[Requirement]) -> str:
         """Export requirements as Markdown"""
         md_lines = ["# Requirements Export\n"]
-        md_lines.append(f"**Generated:** {datetime.utcnow().isoformat()}\n")
+        md_lines.append(f"**Generated:** {datetime.now(UTC).isoformat()}\n")
         md_lines.append(f"**Total Requirements:** {len(requirements)}\n")
         
         # Group by priority

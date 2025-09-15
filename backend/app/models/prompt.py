@@ -2,7 +2,7 @@
 from sqlalchemy import Column, String, Text, Integer, ForeignKey, DateTime, Boolean, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, UTC
 import uuid
 from app.core.database import Base
 from app.models.types import JsonType
@@ -18,8 +18,8 @@ class PromptBundle(Base):
     context_md = Column(Text, nullable=False)  # General context markdown
     extra_metadata = Column('metadata', JsonType, default=dict)
     total_prompts = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC), nullable=False)
     
     # Relationships
     project = relationship("Project")
@@ -41,7 +41,7 @@ class PromptItem(Base):
     title = Column(String(255), nullable=False)
     content_md = Column(Text, nullable=False)  # Prompt markdown content
     extra_metadata = Column('metadata', JsonType, default=dict)  # {requirements: [], estimated_tokens: 0}
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     
     # Relationships
     bundle = relationship("PromptBundle", back_populates="prompts")

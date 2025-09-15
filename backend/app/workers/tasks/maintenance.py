@@ -4,7 +4,7 @@ from app.workers.celery_app import celery_app
 from app.core.database import SessionLocal
 from app.core.observability import get_logger, agent_duration
 from app.models.orchestration import DedupKey, DomainEvent, AuditLog
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import os
 import shutil
 import time
@@ -85,7 +85,7 @@ def cleanup_expired_dedup(self):
     try:
         # Delete expired dedup keys
         expired = self.db.query(DedupKey).filter(
-            DedupKey.expires_at < datetime.utcnow()
+            DedupKey.expires_at < datetime.now(UTC)
         ).all()
         
         deleted_count = len(expired)
@@ -140,7 +140,7 @@ def process_domain_events(self, batch_size: int = 100):
                     logger.info(f"Processing agent event: {event.event_name}")
                 
                 # Mark as processed
-                event.processed_at = datetime.utcnow()
+                event.processed_at = datetime.now(UTC)
                 processed_count += 1
                 
             except Exception as e:
@@ -178,7 +178,7 @@ def retry_failed_tasks(self, max_retries: int = 3):
     
     try:
         # Find recent failed agent executions
-        cutoff = datetime.utcnow() - timedelta(hours=1)
+        cutoff = datetime.now(UTC) - timedelta(hours=1)
         failed_logs = self.db.query(AuditLog).filter(
             AuditLog.created_at > cutoff,
             AuditLog.event_type == 'AGENT_FAILED',
@@ -197,7 +197,7 @@ def retry_failed_tasks(self, max_retries: int = 3):
             backoff_seconds = min(60 * (2 ** retry_count), 600)  # Max 10 minutes
             
             # Check if enough time has passed
-            time_since_failure = (datetime.utcnow() - log.created_at).total_seconds()
+            time_since_failure = (datetime.now(UTC) - log.created_at).total_seconds()
             if time_since_failure < backoff_seconds:
                 continue
             
@@ -248,7 +248,7 @@ def enforce_retention(self, retention_days: int = 90):
     
     try:
         # Delete old audit logs
-        cutoff = datetime.utcnow() - timedelta(days=retention_days)
+        cutoff = datetime.now(UTC) - timedelta(days=retention_days)
         
         deleted = self.db.query(AuditLog).filter(
             AuditLog.created_at < cutoff

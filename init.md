@@ -62,7 +62,7 @@ python -m pytest tests/test_prompt_service.py::test_remove_secrets -v
 
 # Testes Unitários
 
-pytest backend/tests/unit_tests -q
+cd backend && source venv/bin/activate && pytest tests/unit_tests -q
 
 # Executar todos os testes
 make test

@@ -131,7 +131,7 @@ async def finalize_requirements_endpoint(
 @router.get("/export")
 async def export_requirements(
     project_id: UUID,
-    format: str = Query("json", regex="^(json|md)$"),
+    format: str = Query("json", pattern="^(json|md)$"),
     db: Session = Depends(get_db)
 ):
     """Export requirements in JSON or Markdown format"""

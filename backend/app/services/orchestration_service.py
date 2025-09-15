@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any, Tuple
 from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from app.models import Project
 from app.models.orchestration import (
     ProjectState, StateHistory, AuditLog, DomainEvent,
@@ -114,7 +114,7 @@ class OrchestrationService:
                 DedupKey.project_id == project_id,
                 DedupKey.agent_type == agent_type,
                 DedupKey.input_hash == input_hash,
-                DedupKey.expires_at > datetime.utcnow()
+                DedupKey.expires_at > datetime.now(UTC)
             ).first()
             
             return existing
@@ -124,7 +124,7 @@ class OrchestrationService:
             project_id=project_id,
             agent_type=agent_type,
             input_hash=input_hash,
-            expires_at=datetime.utcnow() + timedelta(seconds=ttl_seconds)
+            expires_at=datetime.now(UTC) + timedelta(seconds=ttl_seconds)
         )
         db.add(dedup)
         db.commit()

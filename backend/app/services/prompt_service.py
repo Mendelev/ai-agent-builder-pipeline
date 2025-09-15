@@ -7,7 +7,7 @@ from app.models import Project, Plan, PlanPhase, Requirement, PromptBundle, Prom
 from app.schemas.prompt import PromptGenerateRequest
 from app.utils.security import sanitize_content, generate_placeholder_config
 from app.core.observability import get_logger
-from datetime import datetime
+from datetime import datetime, UTC
 import json
 import zipfile
 import io
@@ -71,7 +71,7 @@ class PromptService:
                 "project_name": project.name,
                 "plan_version": plan.version,
                 "requirements_count": len(requirements),
-                "generated_at": datetime.utcnow().isoformat()
+                "generated_at": datetime.now(UTC).isoformat()
             }
         )
         
@@ -123,7 +123,7 @@ class PromptService:
         
         # Header
         context.append(f"# Project Context: {project.name}\n")
-        context.append(f"**Generated**: {datetime.utcnow().isoformat()}\n")
+        context.append(f"**Generated**: {datetime.now(UTC).isoformat()}\n")
         context.append(f"**Plan Version**: {plan.version}\n")
         
         # Domain & Objectives
@@ -248,7 +248,8 @@ class PromptService:
         prompt.append("## Inputs\n")
         
         # Requirements for this phase
-        phase_reqs = [r for r in requirements if r.key in phase.requirements_covered]
+        requirements_covered = phase.requirements_covered or []
+        phase_reqs = [r for r in requirements if r.key in requirements_covered]
         if phase_reqs:
             prompt.append("### Requirements to Implement")
             for req in phase_reqs:
