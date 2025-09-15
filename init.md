@@ -60,6 +60,10 @@ python -m pytest tests/test_prompts_api.py tests/test_prompt_service.py -v
 # Testar segurança (remoção de secrets)
 python -m pytest tests/test_prompt_service.py::test_remove_secrets -v
 
+# Testes Unitários
+
+pytest backend/tests/unit_tests -q
+
 # Executar todos os testes
 make test
 

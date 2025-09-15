@@ -1,9 +1,12 @@
 # backend/app/core/redis_client.py
-import redis
+import os
+import json
 from typing import Optional, Any
+
+import redis
+
 from app.core.config import settings
 from app.core.observability import get_logger
-import json
 
 logger = get_logger(__name__)
 
@@ -63,4 +66,43 @@ class RedisClient:
         return self.delete(lock_key)
 
 # Global Redis client instance
-redis_client = RedisClient()
+class _InMemoryRedis:
+    """Simple in-memory Redis-like client for tests.
+
+    Provides minimal set of methods used by the application code.
+    """
+
+    def __init__(self):
+        self._store = {}
+
+    def set_nx(self, key: str, value: Any, ttl: int = None) -> bool:
+        if key in self._store:
+            return False
+        self._store[key] = json.dumps(value) if not isinstance(value, str) else value
+        # TTL is ignored in this minimal implementation
+        return True
+
+    def get(self, key: str) -> Optional[str]:
+        return self._store.get(key)
+
+    def delete(self, key: str) -> bool:
+        return self._store.pop(key, None) is not None
+
+    # Compatibility helpers
+    def acquire_lock(self, key: str, timeout: int = 10) -> bool:
+        return self.set_nx(f"lock:{key}", "1", ttl=timeout)
+
+    def release_lock(self, key: str) -> bool:
+        return self.delete(f"lock:{key}")
+
+
+if os.environ.get("DISABLE_REDIS") == "1":
+    logger.info("Redis disabled via DISABLE_REDIS=1; using in-memory stub")
+    redis_client = _InMemoryRedis()
+else:
+    # Attempt to create a real client; fallback to in-memory if connection fails
+    try:
+        redis_client = RedisClient()
+    except Exception:
+        logger.warning("Redis connection failed; falling back to in-memory stub for this process")
+        redis_client = _InMemoryRedis()
