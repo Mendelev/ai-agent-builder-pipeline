@@ -166,3 +166,27 @@ def test_get_nonexistent_plan(client: TestClient, sample_project: Project):
     
     response = client.get(f"/api/v1/projects/{sample_project.id}/plan/latest")
     assert response.status_code == 404
+
+def test_generate_plan_invalid_project(client: TestClient):
+    """Test generating plan for non-existent project."""
+    non_existent_id = uuid.uuid4()
+    response = client.post(
+        f"/api/v1/projects/{non_existent_id}/plan",
+        json={"source": "requirements"}
+    )
+    assert response.status_code == 404
+
+def test_generate_plan_exception_handling(client: TestClient, sample_project: Project):
+    """Test plan generation with invalid request."""
+    response = client.post(
+        f"/api/v1/projects/{sample_project.id}/plan",
+        json={"source": "invalid_source"}
+    )
+    assert response.status_code == 422
+
+def test_get_plan_by_id_invalid_project(client: TestClient):
+    """Test getting plan by ID for non-existent project."""
+    non_existent_project_id = uuid.uuid4()
+    plan_id = uuid.uuid4()
+    response = client.get(f"/api/v1/projects/{non_existent_project_id}/plan/{plan_id}")
+    assert response.status_code == 404

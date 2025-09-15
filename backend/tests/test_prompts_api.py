@@ -180,3 +180,35 @@ def test_download_nonexistent_bundle(client: TestClient, sample_project: Project
     )
     
     assert response.status_code == 404
+
+def test_generate_prompts_invalid_project(client: TestClient):
+    """Test generating prompts for non-existent project."""
+    non_existent_id = uuid.uuid4()
+    response = client.post(
+        f"/api/v1/projects/{non_existent_id}/prompts",
+        json={"formats": ["json"]}
+    )
+    assert response.status_code == 404
+
+def test_generate_prompts_exception_handling(client: TestClient, sample_project: Project):
+    """Test prompts generation exception handling."""
+    response = client.post(
+        f"/api/v1/projects/{sample_project.id}/prompts",
+        json={"formats": ["invalid_format"]}
+    )
+    # Should return 404 because no plan exists for the project
+    assert response.status_code == 404
+
+def test_get_latest_prompts_not_found(client: TestClient, sample_project: Project):
+    """Test getting latest prompts when none exist."""
+    response = client.get(f"/api/v1/projects/{sample_project.id}/prompts/latest")
+    assert response.status_code == 404
+
+def test_download_bundle_invalid_project(client: TestClient):
+    """Test downloading bundle for non-existent project."""
+    non_existent_project_id = uuid.uuid4()
+    bundle_id = uuid.uuid4()
+    response = client.get(
+        f"/api/v1/projects/{non_existent_project_id}/prompts/bundles/{bundle_id}/download"
+    )
+    assert response.status_code == 404

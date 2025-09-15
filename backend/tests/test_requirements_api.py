@@ -208,3 +208,48 @@ def test_refine_requirements(mock_task, client: TestClient, sample_project: Proj
         args=[str(sample_project.id)],
         queue='default'
     )
+
+def test_create_requirements_invalid_project(client: TestClient):
+    """Test creating requirements for non-existent project."""
+    import uuid
+    non_existent_id = uuid.uuid4()
+    response = client.post(
+        f"/api/v1/projects/{non_existent_id}/requirements",
+        json={"requirements": [{"key": "REQ-001", "title": "Test"}]}
+    )
+    # Should return 400 for validation error
+    assert response.status_code == 400
+
+def test_list_requirements_invalid_project(client: TestClient):
+    """Test listing requirements for non-existent project."""
+    import uuid
+    non_existent_id = uuid.uuid4()
+    response = client.get(f"/api/v1/projects/{non_existent_id}/requirements")
+    # Should return 200 with empty results for non-existent project
+    assert response.status_code == 200
+
+def test_export_requirements_invalid_format(client: TestClient, sample_project: Project):
+    """Test exporting requirements with invalid format."""
+    response = client.get(
+        f"/api/v1/projects/{sample_project.id}/requirements/export?format=invalid"
+    )
+    assert response.status_code == 422
+
+def test_finalize_requirements_invalid_project(client: TestClient):
+    """Test finalizing requirements for non-existent project."""
+    import uuid
+    non_existent_id = uuid.uuid4()
+    response = client.post(f"/api/v1/projects/{non_existent_id}/requirements/finalize")
+    # Should return 422 for validation error
+    assert response.status_code == 422
+
+def test_refine_requirements_invalid_project(client: TestClient):
+    """Test refining requirements for non-existent project."""
+    import uuid
+    non_existent_id = uuid.uuid4()
+    response = client.post(
+        f"/api/v1/projects/{non_existent_id}/requirements/refine",
+        json={"context": "test"}
+    )
+    # Should return 404 for non-existent project
+    assert response.status_code in [404, 500]

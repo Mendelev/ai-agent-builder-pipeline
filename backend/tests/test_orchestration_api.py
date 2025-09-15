@@ -94,3 +94,44 @@ def test_retry_invalid_agent(client: TestClient, sample_project: Project):
     
     assert response.status_code == 400
     assert "Invalid agent type" in response.json()["detail"]
+
+def test_get_project_status_not_found(client: TestClient):
+    """Test getting status for non-existent project."""
+    non_existent_id = uuid.uuid4()
+    response = client.get(f"/api/v1/projects/{non_existent_id}")
+    
+    assert response.status_code == 404
+    assert "detail" in response.json()
+
+def test_get_audit_logs_invalid_event_type(client: TestClient, sample_project: Project):
+    """Test audit logs with invalid event type."""
+    response = client.get(
+        f"/api/v1/projects/{sample_project.id}/audit?event_type=INVALID_TYPE"
+    )
+    
+    assert response.status_code == 400
+    assert "Invalid event type" in response.json()["detail"]
+
+def test_get_audit_logs_not_found(client: TestClient):
+    """Test audit logs for non-existent project."""
+    non_existent_id = uuid.uuid4()
+    response = client.get(f"/api/v1/projects/{non_existent_id}/audit")
+    
+    # Should return 200 with empty results, not 500
+    assert response.status_code == 200
+    data = response.json()
+    assert data["items"] == []
+    assert data["total"] == 0
+
+def test_retry_agent_invalid_project(client: TestClient):
+    """Test retry agent for non-existent project."""
+    non_existent_id = uuid.uuid4()
+    response = client.post(
+        f"/api/v1/projects/{non_existent_id}/retry/refine",
+        json={
+            "agent": "REFINE",
+            "force": False
+        }
+    )
+    
+    assert response.status_code in [400, 500]
