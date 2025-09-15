@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = Field(
-        default="postgresql://postgres:postgres@localhost:5432/reqsdb", description="Database connection URL"
+        default="postgresql://postgres:postgres@localhost:5433/reqsdb", description="Database connection URL"
     )
 
     # Redis
