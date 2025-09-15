@@ -217,10 +217,13 @@ class PlanService:
         in_degree = defaultdict(int)
         all_nodes = set(graph.keys())
         
+        # Initialize in-degrees for all nodes
+        for node in all_nodes:
+            in_degree[node] = 0
+        
+        # Count dependencies: graph[node] = list of dependencies of node
         for node in graph:
-            for neighbor in graph[node]:
-                if neighbor in all_nodes:
-                    in_degree[neighbor] += 1
+            in_degree[node] = len(graph[node])
         
         # Find nodes with no dependencies
         queue = deque([node for node in all_nodes if in_degree[node] == 0])
@@ -230,11 +233,12 @@ class PlanService:
             node = queue.popleft()
             result.append(node)
             
-            for neighbor in graph.get(node, []):
-                if neighbor in all_nodes:
-                    in_degree[neighbor] -= 1
-                    if in_degree[neighbor] == 0:
-                        queue.append(neighbor)
+            # Find all nodes that depend on the current node
+            for dependent_node in all_nodes:
+                if node in graph.get(dependent_node, []):
+                    in_degree[dependent_node] -= 1
+                    if in_degree[dependent_node] == 0:
+                        queue.append(dependent_node)
         
         # Check for cycles
         if len(result) != len(all_nodes):

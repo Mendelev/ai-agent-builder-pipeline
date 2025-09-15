@@ -111,6 +111,8 @@ async def retry_agent_execution(
             message=f"Agent {agent} retry {'queued' if result.get('status') != 'cached' else 'using cached result'}"
         )
         
+    except HTTPException:
+        raise  # Re-raise HTTPException without catching it in generic Exception handler
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

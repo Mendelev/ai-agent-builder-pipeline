@@ -1,10 +1,11 @@
 # backend/app/models/prompt.py
 from sqlalchemy import Column, String, Text, Integer, ForeignKey, DateTime, Boolean, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
 from app.core.database import Base
+from app.models.types import JsonType
 
 class PromptBundle(Base):
     __tablename__ = "prompt_bundles"
@@ -15,7 +16,7 @@ class PromptBundle(Base):
     version = Column(Integer, nullable=False, default=1)
     include_code = Column(Boolean, default=False)
     context_md = Column(Text, nullable=False)  # General context markdown
-    extra_metadata = Column('metadata', JSONB, default=dict)
+    extra_metadata = Column('metadata', JsonType, default=dict)
     total_prompts = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -39,7 +40,7 @@ class PromptItem(Base):
     sequence = Column(Integer, nullable=False)
     title = Column(String(255), nullable=False)
     content_md = Column(Text, nullable=False)  # Prompt markdown content
-    extra_metadata = Column('metadata', JSONB, default=dict)  # {requirements: [], estimated_tokens: 0}
+    extra_metadata = Column('metadata', JsonType, default=dict)  # {requirements: [], estimated_tokens: 0}
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     # Relationships

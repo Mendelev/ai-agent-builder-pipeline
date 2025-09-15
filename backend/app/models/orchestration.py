@@ -1,37 +1,12 @@
 # backend/app/models/orchestration.py
 from sqlalchemy import Column, String, Text, Integer, Float, ForeignKey, DateTime, Enum, Boolean, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
-import enum
 from app.core.database import Base
-
-class ProjectState(str, enum.Enum):
-    DRAFT = "DRAFT"
-    REQS_REFINING = "REQS_REFINING"
-    REQS_READY = "REQS_READY"
-    CODE_VALIDATED = "CODE_VALIDATED"
-    PLAN_READY = "PLAN_READY"
-    PROMPTS_READY = "PROMPTS_READY"
-    DONE = "DONE"
-    BLOCKED = "BLOCKED"
-
-class AgentType(str, enum.Enum):
-    REQUIREMENTS = "REQUIREMENTS"
-    REFINE = "REFINE"
-    PLAN = "PLAN"
-    PROMPTS = "PROMPTS"
-    VALIDATION = "VALIDATION"
-
-class EventType(str, enum.Enum):
-    STATE_TRANSITION = "STATE_TRANSITION"
-    AGENT_STARTED = "AGENT_STARTED"
-    AGENT_COMPLETED = "AGENT_COMPLETED"
-    AGENT_FAILED = "AGENT_FAILED"
-    RETRY_ATTEMPTED = "RETRY_ATTEMPTED"
-    USER_ACTION = "USER_ACTION"
-    SYSTEM_EVENT = "SYSTEM_EVENT"
+from app.models.types import JsonType
+from .enums import ProjectState, AgentType, EventType
 
 class StateHistory(Base):
     __tablename__ = "state_history"
@@ -42,7 +17,7 @@ class StateHistory(Base):
     to_state = Column(Enum(ProjectState), nullable=False)
     transition_reason = Column(Text)
     triggered_by = Column(String(100))  # user_id, agent, system
-    extra_metadata = Column('metadata', JSONB, default=dict)
+    extra_metadata = Column('metadata', JsonType, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     # Relationships
@@ -61,7 +36,7 @@ class AuditLog(Base):
     event_type = Column(Enum(EventType), nullable=False)
     agent_type = Column(Enum(AgentType), nullable=True)
     action = Column(String(255), nullable=False)
-    details = Column(JSONB, default=dict)
+    details = Column(JsonType, default=dict)
     user_id = Column(String(100), nullable=True)
     ip_address = Column(String(45), nullable=True)
     duration_ms = Column(Float, nullable=True)
@@ -86,8 +61,8 @@ class DomainEvent(Base):
     aggregate_type = Column(String(50), nullable=False)  # 'project'
     event_name = Column(String(100), nullable=False)
     event_version = Column(Integer, default=1)
-    event_data = Column(JSONB, nullable=False)
-    extra_metadata = Column('metadata', JSONB, default=dict)
+    event_data = Column(JsonType, nullable=False)
+    extra_metadata = Column('metadata', JsonType, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     processed_at = Column(DateTime, nullable=True)
     
@@ -105,7 +80,7 @@ class DedupKey(Base):
     agent_type = Column(Enum(AgentType), nullable=False)
     input_hash = Column(String(64), nullable=False)  # SHA256 hash
     task_id = Column(String(100), nullable=True)  # Celery task ID
-    result = Column(JSONB, nullable=True)
+    result = Column(JsonType, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     

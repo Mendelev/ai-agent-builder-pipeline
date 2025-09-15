@@ -1,11 +1,12 @@
 # backend/app/models/plan.py
 from sqlalchemy import Column, String, Text, Integer, Float, Boolean, ForeignKey, DateTime, Enum, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
 import enum
 from app.core.database import Base
+from app.models.types import JsonType
 
 class PlanStatus(str, enum.Enum):
     DRAFT = "DRAFT"
@@ -24,8 +25,8 @@ class Plan(Base):
     source = Column(String(50), nullable=False)  # 'requirements', 'checklist', 'hybrid'
     use_code = Column(Boolean, default=False)
     include_checklist = Column(Boolean, default=False)
-    constraints = Column(JSONB, default=dict)  # {deadline, team_size, nfrs}
-    extra_metadata = Column('metadata', JSONB, default=dict)
+    constraints = Column(JsonType, default=dict)  # {deadline, team_size, nfrs}
+    extra_metadata = Column('metadata', JsonType, default=dict)
     total_duration_days = Column(Float, default=0)
     risk_score = Column(Float, default=0)
     coverage_percentage = Column(Float, default=0)
@@ -45,15 +46,15 @@ class PlanPhase(Base):
     sequence = Column(Integer, nullable=False)
     title = Column(String(255), nullable=False)
     objective = Column(Text, nullable=False)
-    deliverables = Column(JSONB, default=list)
-    activities = Column(JSONB, default=list)
-    dependencies = Column(JSONB, default=list)  # Phase IDs this depends on
+    deliverables = Column(JsonType, default=list)
+    activities = Column(JsonType, default=list)
+    dependencies = Column(JsonType, default=list)  # Phase IDs this depends on
     estimated_days = Column(Float, nullable=False, default=0)
     risk_level = Column(String(20), default="medium")  # low, medium, high, critical
-    risks = Column(JSONB, default=list)
-    requirements_covered = Column(JSONB, default=list)  # Requirement keys
-    definition_of_done = Column(JSONB, default=list)
-    resources_required = Column(JSONB, default=dict)  # {developers: 2, qa: 1}
+    risks = Column(JsonType, default=list)
+    requirements_covered = Column(JsonType, default=list)  # Requirement keys
+    definition_of_done = Column(JsonType, default=list)
+    resources_required = Column(JsonType, default=dict)  # {developers: 2, qa: 1}
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     
     # Relationships

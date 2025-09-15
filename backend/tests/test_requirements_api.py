@@ -3,7 +3,7 @@ import pytest
 import json
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from app.models import Project, Requirement, ProjectStatus
+from app.models import Project, Requirement, ProjectState
 from unittest.mock import patch, MagicMock
 
 def test_create_requirements_bulk(client: TestClient, sample_project: Project, sample_requirements_data):
@@ -137,7 +137,7 @@ def test_finalize_requirements(client: TestClient, sample_project: Project, samp
     
     # Check project status
     db_session.refresh(sample_project)
-    assert sample_project.status == ProjectStatus.REQS_READY
+    assert sample_project.status == ProjectState.REQS_READY
 
 def test_finalize_requirements_force(client: TestClient, sample_project: Project, sample_requirements_data):
     """Test force finalize."""
@@ -160,9 +160,9 @@ def test_finalize_requirements_validation_failures(client: TestClient, sample_pr
     """Test finalize validation."""
     # Create requirement with circular dependency
     circular_reqs = [
-        {"key": "A", "title": "A", "dependencies": ["B"]},
-        {"key": "B", "title": "B", "dependencies": ["C"]},
-        {"key": "C", "title": "C", "dependencies": ["A"]}
+        {"key": "A", "title": "A", "dependencies": ["B"], "is_coherent": True},
+        {"key": "B", "title": "B", "dependencies": ["C"], "is_coherent": True},
+        {"key": "C", "title": "C", "dependencies": ["A"], "is_coherent": True}
     ]
     
     client.post(

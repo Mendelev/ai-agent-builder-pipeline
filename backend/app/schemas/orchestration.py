@@ -31,13 +31,13 @@ class ProjectStatusResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     recent_events: List[Dict[str, Any]]
-    metadata: Dict[str, Any]
+    metadata: Optional[Dict[str, Any]] = Field(default=None, alias="extra_metadata")
 
 class StateTransition(BaseModel):
     from_state: Optional[ProjectStateEnum]
     to_state: ProjectStateEnum
     reason: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = Field(default=None, alias="extra_metadata")
 
 class AuditLogEntry(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -65,7 +65,7 @@ class AuditLogPage(BaseModel):
 class RetryRequest(BaseModel):
     agent: AgentTypeEnum
     force: bool = False
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = Field(default=None, alias="extra_metadata")
 
 class RetryResponse(BaseModel):
     task_id: str

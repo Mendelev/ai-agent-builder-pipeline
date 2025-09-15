@@ -34,7 +34,7 @@ def test_generate_plan_with_requirements(
     req_creates = [RequirementCreate(**r) for r in sample_requirements_data]
     RequirementService.create_bulk(db_session, sample_project.id, req_creates)
     
-    with patch('app.workers.tasks.plan.generate_plan_task.apply_async') as mock_task:
+    with patch('app.workers.tasks.plan.generate_plan.apply_async') as mock_task:
         mock_result = MagicMock()
         mock_result.get.return_value = {
             "status": "completed",
@@ -114,6 +114,7 @@ def test_get_latest_plan(client: TestClient, sample_project: Project, db_session
         risk_score=0.5
     )
     db_session.add(plan)
+    db_session.flush()  # Assign ID to plan
     
     # Add phases
     from app.models import PlanPhase

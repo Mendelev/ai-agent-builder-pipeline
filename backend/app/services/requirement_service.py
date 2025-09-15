@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any, Set
 from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from app.models import Project, Requirement, RequirementIteration, RequirementQuestion, ProjectStatus
+from app.models import Project, Requirement, RequirementIteration, RequirementQuestion, ProjectState
 from app.schemas.requirement import RequirementCreate, RequirementUpdate
 from app.core.observability import get_logger
 import json
@@ -150,8 +150,8 @@ class RequirementService:
                     "dependencies": req.dependencies,
                     "metadata": req.extra_metadata,
                     "is_coherent": req.is_coherent,
-                    "created_at": req.created_at.isoformat(),
-                    "updated_at": req.updated_at.isoformat()
+                    "created_at": req.created_at.isoformat() if req.created_at else None,
+                    "updated_at": req.updated_at.isoformat() if req.updated_at else None
                 }
                 for req in requirements
             ],
@@ -232,7 +232,7 @@ class RequirementService:
             if not RequirementService.validate_dag(requirements):
                 raise ValueError("Requirements have circular dependencies")
         
-        project.status = ProjectStatus.REQS_READY
+        project.status = ProjectState.REQS_READY
         db.commit()
         
         logger.info(f"Project {project_id} marked as REQS_READY")

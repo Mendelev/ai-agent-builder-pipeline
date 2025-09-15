@@ -12,7 +12,7 @@ class RequirementBase(BaseModel):
     priority: Literal["low", "medium", "high", "critical"] = "medium"
     acceptance_criteria: List[str] = Field(default_factory=list)
     dependencies: List[str] = Field(default_factory=list)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: Dict[str, Any] = Field(default_factory=dict, alias="extra_metadata")
 
     @field_validator('acceptance_criteria')
     @classmethod
@@ -22,7 +22,7 @@ class RequirementBase(BaseModel):
         return v
 
 class RequirementCreate(RequirementBase):
-    pass
+    is_coherent: bool = True
 
 class RequirementUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
@@ -30,7 +30,7 @@ class RequirementUpdate(BaseModel):
     priority: Optional[Literal["low", "medium", "high", "critical"]] = None
     acceptance_criteria: Optional[List[str]] = None
     dependencies: Optional[List[str]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = Field(default=None, alias="extra_metadata")
 
 class RequirementResponse(RequirementBase):
     model_config = ConfigDict(from_attributes=True)

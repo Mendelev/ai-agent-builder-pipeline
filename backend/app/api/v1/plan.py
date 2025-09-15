@@ -1,14 +1,15 @@
 # backend/app/api/v1/plan.py
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 from app.core.database import get_db
 from app.core.observability import get_logger
 from app.schemas.plan import (
     PlanGenerateRequest,
     PlanResponse,
-    PlanSummary
+    PlanSummary,
+    TaskPendingResponse
 )
 from app.services.plan_service import PlanService
 from app.workers.tasks.plan import generate_plan as generate_plan_task
@@ -16,7 +17,7 @@ from app.workers.tasks.plan import generate_plan as generate_plan_task
 router = APIRouter(prefix="/projects/{project_id}/plan", tags=["plan"])
 logger = get_logger(__name__)
 
-@router.post("", response_model=PlanSummary)
+@router.post("", response_model=Union[PlanSummary, TaskPendingResponse])
 async def generate_plan(
     project_id: UUID,
     request: PlanGenerateRequest,
@@ -68,18 +69,20 @@ async def generate_plan(
                         risk_score=plan.risk_score,
                         created_at=plan.created_at
                     )
+                else:
+                    raise HTTPException(status_code=500, detail="Plan was generated but could not be retrieved")
             else:
                 raise HTTPException(status_code=500, detail=result.get("error", "Plan generation failed"))
                 
         except Exception as e:
             logger.warning(f"Task execution timeout or error: {e}")
             # Return task info for async tracking
-            return {
-                "message": "Plan generation in progress",
-                "task_id": task.id,
-                "project_id": str(project_id),
-                "status": "pending"
-            }
+            return TaskPendingResponse(
+                message="Plan generation in progress",
+                task_id=str(task.id),
+                project_id=str(project_id),
+                status="pending"
+            )
             
     except HTTPException:
         raise

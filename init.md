@@ -67,3 +67,24 @@ make test
 make lint
 
 ----------------
+
+# Aplicar nova migration
+make db-migrate
+
+# Iniciar Celery Beat para tarefas agendadas
+celery -A app.workers.celery_app beat --loglevel=info
+
+# Iniciar workers com fila de manutenção
+celery -A app.workers.celery_app worker --loglevel=info -Q default,maintenance
+
+# Executar testes de orquestração
+python -m pytest tests/test_orchestration_api.py tests/test_state_machine.py tests/test_orchestration_service.py -v
+
+# Verificar métricas Prometheus
+curl http://localhost:8000/metrics
+
+# Testar state machine
+python -m pytest tests/test_state_machine.py::test_validate_transition_valid -v
+
+# Executar todos os testes
+make test

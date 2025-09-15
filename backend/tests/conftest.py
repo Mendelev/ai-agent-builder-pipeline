@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 from app.core.database import Base, get_db
 from app.main import app
-from app.models import Project, ProjectStatus
+from app.models import Project, ProjectState
 import uuid
 
 # Test database (SQLite in-memory for speed)
@@ -53,7 +53,7 @@ def sample_project(db_session: Session) -> Project:
         id=uuid.uuid4(),
         name="Test Project",
         description="A test project for requirements",
-        status=ProjectStatus.DRAFT,
+        status=ProjectState.DRAFT,
         context="Testing context for refinement"
     )
     db_session.add(project)

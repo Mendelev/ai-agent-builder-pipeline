@@ -1,10 +1,11 @@
 # backend/app/models/requirement.py
 from sqlalchemy import Column, String, Text, Integer, Boolean, ForeignKey, DateTime, Index, CheckConstraint
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
 from app.core.database import Base
+from app.models.types import JsonType
 
 class Requirement(Base):
     __tablename__ = "requirements"
@@ -15,9 +16,9 @@ class Requirement(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text)
     priority = Column(String(20), nullable=False, default="medium")
-    acceptance_criteria = Column(JSONB, default=list)
-    dependencies = Column(JSONB, default=list)
-    extra_metadata = Column('metadata', JSONB, default=dict)
+    acceptance_criteria = Column(JsonType, default=list)
+    dependencies = Column(JsonType, default=list)
+    extra_metadata = Column('metadata', JsonType, default=dict)
     is_coherent = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -39,7 +40,7 @@ class RequirementIteration(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     requirement_id = Column(UUID(as_uuid=True), ForeignKey("requirements.id"), nullable=False)
     version = Column(Integer, nullable=False)
-    changes = Column(JSONB, default=dict)
+    changes = Column(JsonType, default=dict)
     created_by = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     

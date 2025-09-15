@@ -47,7 +47,7 @@ class PlanResponse(BaseModel):
     use_code: bool
     include_checklist: bool
     constraints: Dict[str, Any]
-    metadata: Dict[str, Any]
+    metadata: Dict[str, Any] = Field(alias="extra_metadata")
     total_duration_days: float
     risk_score: float
     coverage_percentage: float
@@ -67,3 +67,10 @@ class PlanSummary(BaseModel):
     coverage_percentage: float
     risk_score: float
     created_at: datetime
+
+class TaskPendingResponse(BaseModel):
+    """Response when a task is still in progress"""
+    message: str
+    task_id: str
+    project_id: str
+    status: str = "pending"

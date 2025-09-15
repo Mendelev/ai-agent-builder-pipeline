@@ -2,14 +2,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 from app.core.database import get_db
 from app.core.observability import get_logger
 from app.schemas.prompt import (
     PromptGenerateRequest,
     PromptBundleResponse,
-    PromptBundleSummary
+    PromptBundleSummary,
+    TaskPendingResponse
 )
 from app.services.prompt_service import PromptService
 from app.workers.tasks.prompts import generate_prompts as generate_prompts_task
@@ -17,7 +18,7 @@ from app.workers.tasks.prompts import generate_prompts as generate_prompts_task
 router = APIRouter(prefix="/projects/{project_id}/prompts", tags=["prompts"])
 logger = get_logger(__name__)
 
-@router.post("/generate", response_model=PromptBundleSummary)
+@router.post("/generate", response_model=Union[PromptBundleSummary, TaskPendingResponse])
 async def generate_prompts(
     project_id: UUID,
     request: PromptGenerateRequest,
@@ -75,18 +76,20 @@ async def generate_prompts(
                         include_code=bundle.include_code,
                         created_at=bundle.created_at
                     )
+                else:
+                    raise HTTPException(status_code=500, detail="Prompts were generated but could not be retrieved")
             else:
                 raise HTTPException(status_code=500, detail=result.get("error", "Prompt generation failed"))
                 
         except Exception as e:
             logger.warning(f"Task execution timeout or error: {e}")
             # Return task info for async tracking
-            return {
-                "message": "Prompt generation in progress",
-                "task_id": task.id,
-                "project_id": str(project_id),
-                "status": "pending"
-            }
+            return TaskPendingResponse(
+                message="Prompt generation in progress",
+                task_id=str(task.id),
+                project_id=str(project_id),
+                status="pending"
+            )
             
     except HTTPException:
         raise

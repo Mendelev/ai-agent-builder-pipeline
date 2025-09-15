@@ -16,7 +16,7 @@ class PromptItemResponse(BaseModel):
     sequence: int
     title: str
     content_md: str
-    metadata: Dict[str, Any]
+    metadata: Dict[str, Any] = Field(alias="extra_metadata")
     created_at: datetime
 
 class PromptBundleResponse(BaseModel):
@@ -28,7 +28,7 @@ class PromptBundleResponse(BaseModel):
     version: int
     include_code: bool
     context_md: str
-    metadata: Dict[str, Any]
+    metadata: Dict[str, Any] = Field(alias="extra_metadata")
     total_prompts: int
     prompts: List[PromptItemResponse]
     created_at: datetime
@@ -51,3 +51,10 @@ class PromptExport(BaseModel):
     generated_at: datetime
     context: str
     prompts: List[Dict[str, Any]]
+
+class TaskPendingResponse(BaseModel):
+    """Response when a task is still in progress"""
+    message: str
+    task_id: str
+    project_id: str
+    status: str = "pending"

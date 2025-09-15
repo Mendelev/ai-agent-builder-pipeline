@@ -7,7 +7,7 @@ from app.services.prompt_service import PromptService
 from app.schemas.prompt import PromptGenerateRequest
 from uuid import UUID
 import time
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 logger = get_logger(__name__)
 

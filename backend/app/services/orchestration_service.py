@@ -196,6 +196,7 @@ class OrchestrationService:
             "state": project.status,
             "created_at": project.created_at,
             "updated_at": project.updated_at,
+            "extra_metadata": getattr(project, 'extra_metadata', {}),
             "recent_events": [
                 {
                     "type": event.event_type.value,

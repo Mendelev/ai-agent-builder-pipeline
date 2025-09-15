@@ -60,7 +60,7 @@ def test_generate_prompts_with_plan(
     db_session.add(req)
     db_session.commit()
     
-    with patch('app.workers.tasks.prompts.generate_prompts_task.apply_async') as mock_task:
+    with patch('app.workers.tasks.prompts.generate_prompts.apply_async') as mock_task:
         mock_result = MagicMock()
         mock_result.get.return_value = {
             "status": "completed",
@@ -92,6 +92,7 @@ def test_get_latest_prompts(client: TestClient, sample_project: Project, db_sess
         total_prompts=2
     )
     db_session.add(bundle)
+    db_session.flush()  # Assign ID to bundle
     
     # Add prompt items
     from app.models import PromptItem

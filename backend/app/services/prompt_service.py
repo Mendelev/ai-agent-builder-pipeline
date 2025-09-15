@@ -351,9 +351,7 @@ class PromptService:
         prompt.append("## Notes\n")
         prompt.append(f"- Estimated Duration: {phase.estimated_days} days")
         prompt.append(f"- Requirements Coverage: {len(phase.requirements_covered)} requirements")
-        if phase.extra_metadata:
-            for key, value in phase.extra_metadata.items():
-                prompt.append(f"- {key}: {value}")
+        # Note: PlanPhase doesn't have extra_metadata field - could be added later if needed
         
         return "\n".join(prompt)
     

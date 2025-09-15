@@ -87,7 +87,7 @@ def test_retry_invalid_agent(client: TestClient, sample_project: Project):
     response = client.post(
         f"/api/v1/projects/{sample_project.id}/retry/invalid_agent",
         json={
-            "agent": "INVALID",
+            "agent": "REQUIREMENTS",  # Valid in JSON, but URL has invalid agent
             "force": False
         }
     )

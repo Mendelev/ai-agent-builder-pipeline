@@ -63,6 +63,7 @@ def test_generate_context(db_session: Session, sample_project: Project):
         }
     )
     db_session.add(plan)
+    db_session.flush()  # This assigns an ID to plan
     
     phase = PlanPhase(
         plan_id=plan.id,

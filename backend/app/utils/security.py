@@ -10,7 +10,7 @@ SECRET_PATTERNS = [
     (r'[aA][wW][sS][-_]?[sS][eE][cC][rR][eE][tT]\s*[:=]\s*["\']?[\w/+=]+["\']?', 'AWS_SECRET=<REDACTED>'),
     (r'AKIA[0-9A-Z]{16}', 'AWS_ACCESS_KEY_ID=<REDACTED>'),
     # Database URLs
-    (r'(mongodb|postgres|mysql|redis)://[^:]+:[^@]+@[^/\s]+', r'\1://<USER>:<PASSWORD>@<HOST>'),
+    (r'(mongodb|postgresql|postgres|mysql|redis)://[^:]+:[^@]+@[^/\s]+', r'\1://<USER>:<PASSWORD>@<HOST>'),
     # JWT/Tokens
     (r'[bB][eE][aA][rR][eE][rR]\s+[\w\-_.]+', 'Bearer <TOKEN>'),
     (r'[tT][oO][kK][eE][nN]\s*[:=]\s*["\']?[\w\-_.]+["\']?', 'TOKEN=<REDACTED>'),
@@ -38,7 +38,19 @@ def sanitize_content(data: Any) -> Any:
     if isinstance(data, str):
         return remove_secrets(data)
     elif isinstance(data, dict):
-        return {k: sanitize_content(v) for k, v in data.items()}
+        sanitized = {}
+        for k, v in data.items():
+            # Check if the key indicates sensitive data
+            key_lower = k.lower()
+            if any(sensitive in key_lower for sensitive in ['password', 'secret', 'key', 'token']):
+                if isinstance(v, str):
+                    sanitized[k] = "<REDACTED>"
+                else:
+                    sanitized[k] = sanitize_content(v)
+            else:
+                # Also sanitize values that look sensitive (like database URLs)
+                sanitized[k] = sanitize_content(v)
+        return sanitized
     elif isinstance(data, list):
         return [sanitize_content(item) for item in data]
     else:
