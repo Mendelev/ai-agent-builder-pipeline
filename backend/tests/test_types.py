@@ -1,20 +1,21 @@
 # backend/tests/test_types.py
-import pytest
 from unittest.mock import MagicMock
+
 from sqlalchemy import JSON
 from sqlalchemy.dialects.postgresql import JSONB
+
 from app.models.types import JsonType
 
 
 def test_json_type_postgresql_dialect():
     """Test JsonType uses JSONB for PostgreSQL dialect."""
     json_type = JsonType()
-    
+
     # Mock PostgreSQL dialect
     pg_dialect = MagicMock()
-    pg_dialect.name = 'postgresql'
+    pg_dialect.name = "postgresql"
     pg_dialect.type_descriptor.return_value = JSONB()
-    
+
     result = json_type.load_dialect_impl(pg_dialect)
     assert isinstance(result, JSONB)
     pg_dialect.type_descriptor.assert_called_once()
@@ -23,12 +24,12 @@ def test_json_type_postgresql_dialect():
 def test_json_type_other_dialect():
     """Test JsonType uses JSON for non-PostgreSQL dialects."""
     json_type = JsonType()
-    
+
     # Mock SQLite dialect
     sqlite_dialect = MagicMock()
-    sqlite_dialect.name = 'sqlite'
+    sqlite_dialect.name = "sqlite"
     sqlite_dialect.type_descriptor.return_value = JSON()
-    
+
     result = json_type.load_dialect_impl(sqlite_dialect)
     assert isinstance(result, JSON)
     sqlite_dialect.type_descriptor.assert_called_once()
@@ -39,7 +40,7 @@ def test_json_type_process_bind_param():
     json_type = JsonType()
     test_value = {"key": "value"}
     dialect = MagicMock()
-    
+
     result = json_type.process_bind_param(test_value, dialect)
     assert result == test_value
 
@@ -49,7 +50,7 @@ def test_json_type_process_result_value():
     json_type = JsonType()
     test_value = {"result": "data"}
     dialect = MagicMock()
-    
+
     result = json_type.process_result_value(test_value, dialect)
     assert result == test_value
 

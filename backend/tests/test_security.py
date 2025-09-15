@@ -1,6 +1,5 @@
 # backend/tests/test_security.py
-import pytest
-from app.utils.security import remove_secrets, sanitize_content, generate_placeholder_config
+from app.utils.security import generate_placeholder_config, remove_secrets, sanitize_content
 
 
 def test_remove_secrets_api_keys():
@@ -17,7 +16,7 @@ def test_remove_secrets_aws_keys():
     result = remove_secrets(content)
     assert "ABCDEFGHIJKLMNOP1234567890+/=" not in result
     assert "AWS_SECRET=<REDACTED>" in result
-    
+
     access_key = "AKIA1234567890ABCDEF"
     result = remove_secrets(access_key)
     assert "AKIA1234567890ABCDEF" not in result
@@ -78,10 +77,10 @@ def test_sanitize_content_dict():
         "api_key": "secret123",
         "password": "mypassword",
         "normal_field": "normal_value",
-        "database_url": "postgresql://user:pass@host:5432/db"
+        "database_url": "postgresql://user:pass@host:5432/db",
     }
     result = sanitize_content(data)
-    
+
     assert result["api_key"] == "<REDACTED>"
     assert result["password"] == "<REDACTED>"
     assert result["normal_field"] == "normal_value"
@@ -92,22 +91,16 @@ def test_sanitize_content_list():
     """Test sanitizing list content."""
     data = ["normal", "API_KEY=secret123"]
     result = sanitize_content(data)
-    
+
     assert result[0] == "normal"
     assert "secret123" not in result[1]
 
 
 def test_sanitize_content_nested():
     """Test sanitizing nested structures."""
-    data = {
-        "config": {
-            "secret": "mysecret",
-            "public": "value"
-        },
-        "items": ["normal", "TOKEN=abc123"]
-    }
+    data = {"config": {"secret": "mysecret", "public": "value"}, "items": ["normal", "TOKEN=abc123"]}
     result = sanitize_content(data)
-    
+
     assert result["config"]["secret"] == "<REDACTED>"
     assert result["config"]["public"] == "value"
     assert "abc123" not in result["items"][1]
@@ -123,7 +116,7 @@ def test_sanitize_content_non_dict_list_str():
 def test_generate_placeholder_config():
     """Test placeholder config generation."""
     config = generate_placeholder_config()
-    
+
     assert isinstance(config, dict)
     assert "database_url" in config
     assert "redis_url" in config

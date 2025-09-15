@@ -1,16 +1,19 @@
 # backend/app/schemas/prompt.py
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class PromptGenerateRequest(BaseModel):
     include_code: bool = Field(default=False, description="Include code generation instructions")
     plan_id: Optional[UUID] = Field(None, description="Specific plan ID to use")
 
+
 class PromptItemResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     phase_id: str
     sequence: int
@@ -19,9 +22,10 @@ class PromptItemResponse(BaseModel):
     metadata: Dict[str, Any] = Field(alias="extra_metadata")
     created_at: datetime
 
+
 class PromptBundleResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     project_id: UUID
     plan_id: UUID
@@ -34,9 +38,10 @@ class PromptBundleResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
 class PromptBundleSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     project_id: UUID
     plan_id: UUID
@@ -45,6 +50,7 @@ class PromptBundleSummary(BaseModel):
     include_code: bool
     created_at: datetime
 
+
 class PromptExport(BaseModel):
     bundle_id: UUID
     project_name: str
@@ -52,8 +58,10 @@ class PromptExport(BaseModel):
     context: str
     prompts: List[Dict[str, Any]]
 
+
 class TaskPendingResponse(BaseModel):
     """Response when a task is still in progress"""
+
     message: str
     task_id: str
     project_id: str

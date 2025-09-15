@@ -1,6 +1,7 @@
 # backend/app/models/enums.py
 import enum
 
+
 class ProjectState(str, enum.Enum):
     DRAFT = "DRAFT"
     REQS_REFINING = "REQS_REFINING"
@@ -11,12 +12,14 @@ class ProjectState(str, enum.Enum):
     DONE = "DONE"
     BLOCKED = "BLOCKED"
 
+
 class AgentType(str, enum.Enum):
     REQUIREMENTS = "REQUIREMENTS"
     REFINE = "REFINE"
     PLAN = "PLAN"
     PROMPTS = "PROMPTS"
     VALIDATION = "VALIDATION"
+
 
 class EventType(str, enum.Enum):
     STATE_TRANSITION = "STATE_TRANSITION"

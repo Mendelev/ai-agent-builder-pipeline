@@ -1,12 +1,13 @@
 # backend/app/workers/celery_app.py
 from celery import Celery
+
 from app.core.config import settings
 
 celery_app = Celery(
     "requirements_manager",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
-    include=["app.workers.tasks.requirements"]
+    include=["app.workers.tasks.requirements"],
 )
 
 celery_app.conf.update(
@@ -22,6 +23,6 @@ celery_app.conf.update(
     worker_max_tasks_per_child=100,
     result_expires=3600,
     task_routes={
-        'reqs.refine': {'queue': 'default'},
-    }
+        "reqs.refine": {"queue": "default"},
+    },
 )

@@ -5,16 +5,16 @@ in backend/tests/unit_tests can run without triggering external
 connections during module import.
 """
 
-import pytest
-import asyncio
 import sys
+import uuid
 from pathlib import Path
 from typing import Generator
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
-import uuid
 
 # Ensure `backend` is on sys.path so `import app` works when running from repo root
 _BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -31,6 +31,7 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 @pytest.fixture(scope="function")
 def db_session() -> Generator[Session, None, None]:
     """Create a new database session for a test (SQLite in-memory).
@@ -46,6 +47,7 @@ def db_session() -> Generator[Session, None, None]:
     finally:
         session.close()
         Base.metadata.drop_all(bind=engine)
+
 
 @pytest.fixture(scope="function")
 def client(db_session: Session) -> TestClient:
@@ -67,6 +69,7 @@ def client(db_session: Session) -> TestClient:
         yield test_client
     app.dependency_overrides.clear()
 
+
 @pytest.fixture
 def sample_project(db_session: Session):
     """Create a sample project for testing (lazy imports)."""
@@ -84,6 +87,7 @@ def sample_project(db_session: Session):
     db_session.refresh(project)
     return project
 
+
 @pytest.fixture
 def sample_requirements_data():
     """Sample requirements data for testing."""
@@ -97,33 +101,27 @@ def sample_requirements_data():
                 "Users can register with email",
                 "Users can login with credentials",
                 "Password reset functionality works",
-                "OAuth2 integration with Google"
+                "OAuth2 integration with Google",
             ],
             "dependencies": [],
-            "metadata": {"category": "security", "effort": "high"}
+            "metadata": {"category": "security", "effort": "high"},
         },
         {
             "key": "REQ-002",
             "title": "Dashboard",
             "description": "Create comprehensive user dashboard",
             "priority": "medium",
-            "acceptance_criteria": [
-                "Display user statistics",
-                "Show recent activity"
-            ],
+            "acceptance_criteria": ["Display user statistics", "Show recent activity"],
             "dependencies": ["REQ-001"],
-            "metadata": {"category": "ui", "effort": "medium"}
+            "metadata": {"category": "ui", "effort": "medium"},
         },
         {
             "key": "REQ-003",
             "title": "API Rate Limiting",
             "description": "Implement rate limiting",
             "priority": "critical",
-            "acceptance_criteria": [
-                "Limit requests per IP",
-                "Configurable limits"
-            ],
+            "acceptance_criteria": ["Limit requests per IP", "Configurable limits"],
             "dependencies": [],
-            "metadata": {"category": "security"}
-        }
+            "metadata": {"category": "security"},
+        },
     ]

@@ -1,12 +1,14 @@
 # backend/app/schemas/requirement.py
-from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
-from typing import List, Optional, Dict, Any, Literal
-from datetime import datetime
-from uuid import UUID
 import sys
+from datetime import datetime
+from typing import Any, Dict, List, Literal, Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
 
 class RequirementBase(BaseModel):
-    key: str = Field(..., max_length=50, pattern=r'^[A-Z0-9_-]+$')
+    key: str = Field(..., max_length=50, pattern=r"^[A-Z0-9_-]+$")
     title: str = Field(..., max_length=255)
     description: Optional[str] = None
     priority: Literal["low", "medium", "high", "critical"] = "medium"
@@ -14,15 +16,17 @@ class RequirementBase(BaseModel):
     dependencies: List[str] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict, alias="extra_metadata")
 
-    @field_validator('acceptance_criteria')
+    @field_validator("acceptance_criteria")
     @classmethod
     def validate_acceptance_criteria(cls, v, info):
-        if info.data.get('priority') in ['high', 'critical'] and not v:
-            raise ValueError('High/critical priority requirements must have acceptance criteria')
+        if info.data.get("priority") in ["high", "critical"] and not v:
+            raise ValueError("High/critical priority requirements must have acceptance criteria")
         return v
+
 
 class RequirementCreate(RequirementBase):
     is_coherent: bool = True
+
 
 class RequirementUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
@@ -32,31 +36,34 @@ class RequirementUpdate(BaseModel):
     dependencies: Optional[List[str]] = None
     metadata: Optional[Dict[str, Any]] = Field(default=None, alias="extra_metadata")
 
+
 class RequirementResponse(RequirementBase):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     project_id: UUID
     is_coherent: bool
     created_at: datetime
     updated_at: datetime
 
+
 class RequirementBulkCreate(BaseModel):
     requirements: List[RequirementCreate] = Field(..., max_length=1000)
-    
-    @model_validator(mode='after')
+
+    @model_validator(mode="after")
     def validate_payload_size(self):
         # Rough estimation of payload size
         total_size = sys.getsizeof(self.model_dump_json())
         if total_size > 100 * 1024 * 1024:  # 100MB
-            raise ValueError('Payload exceeds 100MB limit')
+            raise ValueError("Payload exceeds 100MB limit")
         if len(self.requirements) > 100:
-            raise ValueError('Maximum 100 requirements per bulk operation')
+            raise ValueError("Maximum 100 requirements per bulk operation")
         return self
+
 
 class RequirementQuestionSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     requirement_id: UUID
     question: str
@@ -65,9 +72,10 @@ class RequirementQuestionSchema(BaseModel):
     created_at: datetime
     answered_at: Optional[datetime] = None
 
+
 class RequirementIterationSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     requirement_id: UUID
     version: int
@@ -75,11 +83,14 @@ class RequirementIterationSchema(BaseModel):
     created_by: Optional[str]
     created_at: datetime
 
+
 class RefineRequest(BaseModel):
     context: Optional[str] = None
 
+
 class FinalizeRequest(BaseModel):
     force: bool = False
+
 
 class ExportFormat(BaseModel):
     format: Literal["json", "md"] = "json"

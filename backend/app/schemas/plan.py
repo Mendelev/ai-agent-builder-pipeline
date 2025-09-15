@@ -1,8 +1,10 @@
 # backend/app/schemas/plan.py
-from pydantic import BaseModel, Field, ConfigDict, field_validator
-from typing import List, Optional, Dict, Any, Literal
 from datetime import datetime
+from typing import Any, Dict, List, Literal, Optional
 from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class PlanConstraints(BaseModel):
     deadline_days: Optional[int] = Field(None, ge=1, le=365)
@@ -11,15 +13,17 @@ class PlanConstraints(BaseModel):
     nfrs: Optional[List[str]] = Field(default_factory=list)
     budget: Optional[float] = Field(None, ge=0)
 
+
 class PlanGenerateRequest(BaseModel):
     source: Literal["requirements", "checklist", "hybrid"] = "requirements"
     use_code: bool = False
     include_checklist: bool = False
     constraints: Optional[PlanConstraints] = None
 
+
 class PlanPhaseResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     phase_id: str
     sequence: int
@@ -36,9 +40,10 @@ class PlanPhaseResponse(BaseModel):
     resources_required: Dict[str, int]
     created_at: datetime
 
+
 class PlanResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     project_id: UUID
     version: int
@@ -55,9 +60,10 @@ class PlanResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
 class PlanSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: UUID
     project_id: UUID
     version: int
@@ -68,8 +74,10 @@ class PlanSummary(BaseModel):
     risk_score: float
     created_at: datetime
 
+
 class TaskPendingResponse(BaseModel):
     """Response when a task is still in progress"""
+
     message: str
     task_id: str
     project_id: str
