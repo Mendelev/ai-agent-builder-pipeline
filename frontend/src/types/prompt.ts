@@ -26,3 +26,13 @@ export interface PromptGenerateRequest {
   include_code: boolean;
   plan_id?: string;
 }
+
+export interface PromptBundleSummary {
+  id: string;
+  project_id: string;
+  plan_id: string;
+  version: number;
+  total_prompts: number;
+  include_code: boolean;
+  created_at: string;
+}

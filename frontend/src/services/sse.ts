@@ -12,6 +12,11 @@ export class SSEClient {
       this.disconnect();
     }
 
+    if (!this.url) {
+      console.warn('SSE URL not configured; skipping connection');
+      return;
+    }
+
     const sseUrl = `${this.url}/projects/${projectId}/events`;
     this.eventSource = new EventSource(sseUrl);
 

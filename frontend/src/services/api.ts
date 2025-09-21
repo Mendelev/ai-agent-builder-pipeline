@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'ax
 import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+import { API_URL } from '@/config';
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -11,6 +11,8 @@ export const apiClient: AxiosInstance = axios.create({
   },
   timeout: 30000,
 });
+
+export const SKIP_ERROR_TOAST_HEADER = 'X-Skip-Error-Toast';
 
 // Request interceptor for correlation ID
 apiClient.interceptors.request.use(
@@ -38,10 +40,12 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ detail: string }>) => {
     const message = error.response?.data?.detail || error.message || 'An error occurred';
-    
-    // Show error toast
-    toast.error(message);
-    
+    const skipToast = error.config?.headers?.[SKIP_ERROR_TOAST_HEADER] === 'true';
+
+    if (!skipToast) {
+      toast.error(message);
+    }
+
     // Log error with correlation ID
     console.error('API Error:', {
       correlationId: error.config?.headers?.['X-Correlation-ID'],

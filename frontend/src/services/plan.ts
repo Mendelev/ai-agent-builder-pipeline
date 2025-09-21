@@ -1,12 +1,12 @@
-import apiClient from './api';
-import { Plan, PlanGenerateRequest } from '@/types';
+import apiClient, { SKIP_ERROR_TOAST_HEADER } from './api';
+import { Plan, PlanGenerateRequest, PlanSummary, TaskPendingResponse } from '@/types';
 
 export const planService = {
   async generatePlan(
     projectId: string,
     request: PlanGenerateRequest
-  ): Promise<{ id: string; version: number; total_phases: number }> {
-    const { data } = await apiClient.post(
+  ): Promise<PlanSummary | TaskPendingResponse> {
+    const { data } = await apiClient.post<PlanSummary | TaskPendingResponse>(
       `/projects/${projectId}/plan`,
       request
     );
@@ -15,7 +15,8 @@ export const planService = {
 
   async getLatestPlan(projectId: string): Promise<Plan> {
     const { data } = await apiClient.get<Plan>(
-      `/projects/${projectId}/plan/latest`
+      `/projects/${projectId}/plan/latest`,
+      { headers: { [SKIP_ERROR_TOAST_HEADER]: 'true' } }
     );
     return data;
   },

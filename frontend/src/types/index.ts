@@ -21,3 +21,10 @@ export interface ErrorResponse {
   detail: string;
   status?: number;
 }
+
+export interface TaskPendingResponse {
+  message: string;
+  task_id: string;
+  project_id: string;
+  status: string;
+}

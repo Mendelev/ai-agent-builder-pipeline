@@ -1,12 +1,12 @@
-import apiClient from './api';
-import { PromptBundle, PromptGenerateRequest } from '@/types';
+import apiClient, { SKIP_ERROR_TOAST_HEADER } from './api';
+import { PromptBundle, PromptBundleSummary, PromptGenerateRequest, TaskPendingResponse } from '@/types';
 
 export const promptsService = {
   async generatePrompts(
     projectId: string,
     request: PromptGenerateRequest
-  ): Promise<{ id: string; version: number; total_prompts: number }> {
-    const { data } = await apiClient.post(
+  ): Promise<PromptBundleSummary | TaskPendingResponse> {
+    const { data } = await apiClient.post<PromptBundleSummary | TaskPendingResponse>(
       `/projects/${projectId}/prompts/generate`,
       request
     );
@@ -15,7 +15,8 @@ export const promptsService = {
 
   async getLatestPrompts(projectId: string): Promise<PromptBundle> {
     const { data } = await apiClient.get<PromptBundle>(
-      `/projects/${projectId}/prompts/latest`
+      `/projects/${projectId}/prompts/latest`,
+      { headers: { [SKIP_ERROR_TOAST_HEADER]: 'true' } }
     );
     return data;
   },

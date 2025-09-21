@@ -15,14 +15,30 @@ Activity,
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-  const { projectId = 'test-project-id' } = useParams();
+  const { projectId } = useParams<{ projectId: string }>();
   const { project, isLoading, auditLogs } = useProjects(projectId);
   useSSE(projectId);
+
+  if (!projectId) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        Select a project to view the dashboard.
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        Unable to load project status.
       </div>
     );
   }

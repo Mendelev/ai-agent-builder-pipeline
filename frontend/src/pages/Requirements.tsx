@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { requirementsService } from '@/services/requirements';
 import { RequirementEditor } from '@/components/Requirements/RequirementEditor';
@@ -10,7 +11,7 @@ import { Requirement } from '@/types';
 import toast from 'react-hot-toast';
 
 export const Requirements: React.FC = () => {
-  const projectId = 'test-project-id'; // TODO: Get from route params
+  const { projectId } = useParams<{ projectId: string }>();
   const queryClient = useQueryClient();
   const [showEditor, setShowEditor] = useState(false);
   const [editingRequirement, setEditingRequirement] = useState<Requirement | undefined>();
@@ -18,12 +19,13 @@ export const Requirements: React.FC = () => {
 
   const { data: requirements = [], isLoading } = useQuery({
     queryKey: ['requirements', projectId],
-    queryFn: () => requirementsService.listRequirements(projectId),
+    enabled: !!projectId,
+    queryFn: () => requirementsService.listRequirements(projectId!),
   });
 
   const createMutation = useMutation({
     mutationFn: (reqs: Requirement[]) =>
-      requirementsService.createRequirements(projectId, reqs),
+      requirementsService.createRequirements(projectId!, reqs),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requirements', projectId] });
       toast.success('Requirements saved');
@@ -34,7 +36,7 @@ export const Requirements: React.FC = () => {
 
   const refineMutation = useMutation({
     mutationFn: (context?: string) =>
-      requirementsService.refineRequirements(projectId, context),
+      requirementsService.refineRequirements(projectId!, context),
     onSuccess: () => {
       toast.success('Refinement started');
     },
@@ -42,7 +44,7 @@ export const Requirements: React.FC = () => {
 
   const finalizeMutation = useMutation({
     mutationFn: (force: boolean) =>
-      requirementsService.finalizeRequirements(projectId, force),
+      requirementsService.finalizeRequirements(projectId!, force),
     onSuccess: () => {
       toast.success('Requirements finalized');
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
@@ -51,7 +53,7 @@ export const Requirements: React.FC = () => {
 
   const exportMutation = useMutation({
     mutationFn: (format: 'json' | 'md') =>
-      requirementsService.exportRequirements(projectId, format),
+      requirementsService.exportRequirements(projectId!, format),
     onSuccess: (data, format) => {
       const blob = new Blob(
         [format === 'json' ? JSON.stringify(data, null, 2) : data],
@@ -114,6 +116,14 @@ export const Requirements: React.FC = () => {
       ),
     },
   ];
+
+  if (!projectId) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        Select a project to manage requirements.
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

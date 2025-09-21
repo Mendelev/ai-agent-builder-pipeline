@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Home,
@@ -10,20 +10,50 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { useUIStore } from '@/store';
+import { useUIStore, useProjectStore } from '@/store';
 import clsx from 'clsx';
-
-const menuItems = [
-  { path: '/', label: 'Dashboard', icon: Home },
-  { path: '/requirements', label: 'Requirements', icon: FileText },
-  { path: '/code-checklist', label: 'Code & Checklist', icon: Code },
-  { path: '/planning', label: 'Planning', icon: Calendar },
-  { path: '/prompts', label: 'Prompts', icon: MessageSquare },
-  { path: '/audit', label: 'Audit', icon: History },
-];
 
 export const Sidebar: React.FC = () => {
   const { sidebarOpen, toggleSidebar } = useUIStore();
+  const { currentProjectId } = useProjectStore();
+
+  const menuItems = useMemo(() => {
+    const hasProject = Boolean(currentProjectId);
+    const basePath = hasProject ? `/projects/${currentProjectId}` : '';
+    return [
+      { path: hasProject ? basePath : '/', label: 'Dashboard', icon: Home, disabled: !hasProject },
+      {
+        path: hasProject ? `${basePath}/requirements` : '/',
+        label: 'Requirements',
+        icon: FileText,
+        disabled: !hasProject,
+      },
+      {
+        path: hasProject ? `${basePath}/code-checklist` : '/',
+        label: 'Code & Checklist',
+        icon: Code,
+        disabled: !hasProject,
+      },
+      {
+        path: hasProject ? `${basePath}/planning` : '/',
+        label: 'Planning',
+        icon: Calendar,
+        disabled: !hasProject,
+      },
+      {
+        path: hasProject ? `${basePath}/prompts` : '/',
+        label: 'Prompts',
+        icon: MessageSquare,
+        disabled: !hasProject,
+      },
+      {
+        path: hasProject ? `${basePath}/audit` : '/',
+        label: 'Audit',
+        icon: History,
+        disabled: !hasProject,
+      },
+    ];
+  }, [currentProjectId]);
 
   return (
     <aside
@@ -36,13 +66,20 @@ export const Sidebar: React.FC = () => {
         <nav className="flex-1">
           <ul className="space-y-2 px-3">
             {menuItems.map((item) => (
-              <li key={item.path}>
+              <li key={item.label}>
                 <NavLink
                   to={item.path}
+                  onClick={(event) => {
+                    if (item.disabled) {
+                      event.preventDefault();
+                    }
+                  }}
                   className={({ isActive }) =>
                     clsx(
                       'flex items-center px-3 py-2 rounded-lg transition-colors',
-                      isActive
+                      item.disabled
+                        ? 'cursor-not-allowed opacity-50'
+                        : isActive
                         ? 'bg-blue-600 text-white'
                         : 'hover:bg-gray-800 text-gray-300'
                     )

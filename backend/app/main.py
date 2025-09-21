@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
-from app.api.v1 import orchestration, plan, prompts, requirements
+from app.api.v1 import orchestration, plan, prompts, projects, requirements
 from app.core import CorrelationIdMiddleware, settings, setup_logging
 from app.middleware.tracing import setup_tracing
 
@@ -55,6 +55,7 @@ async def metrics():
 
 
 # Include routers
+app.include_router(projects.router, prefix=settings.API_V1_PREFIX)
 app.include_router(requirements.router, prefix=settings.API_V1_PREFIX)
 app.include_router(plan.router, prefix=settings.API_V1_PREFIX)
 app.include_router(prompts.router, prefix=settings.API_V1_PREFIX)

@@ -1,13 +1,15 @@
 import { create } from 'zustand';
-import { Project, Requirement, Plan, PromptBundle } from '@/types';
+import { ProjectStatus, Requirement, Plan, PromptBundle } from '@/types';
 
 interface ProjectStore {
-  currentProject: Project | null;
+  currentProjectId: string | null;
+  currentProject: ProjectStatus | null;
   requirements: Requirement[];
   currentPlan: Plan | null;
   currentPrompts: PromptBundle | null;
   
-  setCurrentProject: (project: Project | null) => void;
+  setCurrentProjectId: (projectId: string | null) => void;
+  setCurrentProject: (project: ProjectStatus | null) => void;
   setRequirements: (requirements: Requirement[]) => void;
   updateRequirement: (key: string, updates: Partial<Requirement>) => void;
   setCurrentPlan: (plan: Plan | null) => void;
@@ -16,12 +18,20 @@ interface ProjectStore {
 }
 
 export const useProjectStore = create<ProjectStore>((set) => ({
+  currentProjectId: null,
   currentProject: null,
   requirements: [],
   currentPlan: null,
   currentPrompts: null,
 
-  setCurrentProject: (project) => set({ currentProject: project }),
+  setCurrentProjectId: (projectId) =>
+    set({ currentProjectId: projectId ?? null }),
+
+  setCurrentProject: (project) =>
+    set({
+      currentProject: project,
+      currentProjectId: project ? project.id : null,
+    }),
   
   setRequirements: (requirements) => set({ requirements }),
   
@@ -38,6 +48,7 @@ export const useProjectStore = create<ProjectStore>((set) => ({
   
   reset: () =>
     set({
+      currentProjectId: null,
       currentProject: null,
       requirements: [],
       currentPlan: null,

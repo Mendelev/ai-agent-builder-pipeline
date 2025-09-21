@@ -46,3 +46,15 @@ export interface PlanGenerateRequest {
     budget?: number;
   };
 }
+
+export interface PlanSummary {
+  id: string;
+  project_id: string;
+  version: number;
+  status: string;
+  total_phases: number;
+  total_duration_days: number;
+  coverage_percentage: number;
+  risk_score: number;
+  created_at: string;
+}
