@@ -1,0 +1,110 @@
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai-agent-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_agent_builder}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-ai_agent_builder}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-agent-network
+
+  # pgAdmin - PostgreSQL Admin UI (opcional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ai-agent-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - ai-agent-network
+    profiles:
+      - tools  # Use 'docker-compose --profile tools up' para incluir
+
+  # Backend API (FastAPI)
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: ai-agent-backend
+  #   restart: unless-stopped
+  #   environment:
+  #     DATABASE_URL: postgresql://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-ai_agent_builder}
+  #     DEBUG: ${DEBUG:-True}
+  #     HOST: 0.0.0.0
+  #     PORT: 8000
+  #   ports:
+  #     - "${BACKEND_PORT:-8000}:8000"
+  #   volumes:
+  #     - ./backend:/app
+  #     - backend_venv:/app/venv
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   networks:
+  #     - ai-agent-network
+  #   command: >
+  #     sh -c "
+  #       echo '🔄 Aguardando PostgreSQL...' &&
+  #       sleep 2 &&
+  #       echo '📦 Instalando dependências...' &&
+  #       pip install -r requirements.txt &&
+  #       echo '🔄 Executando migrações...' &&
+  #       alembic upgrade head &&
+  #       echo '🚀 Iniciando servidor...' &&
+  #       uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+  #     "
+
+  # Redis (opcional - para cache e filas)
+  redis:
+    image: redis:7-alpine
+    container_name: ai-agent-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-agent-network
+    profiles:
+      - tools  # Use 'docker-compose --profile tools up' para incluir
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_venv:
+    driver: local
+
+networks:
+  ai-agent-network:
+    driver: bridge
