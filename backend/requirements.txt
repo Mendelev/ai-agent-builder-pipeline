@@ -14,7 +14,8 @@ pydantic-settings==2.1.0
 # Python utilities
 python-dotenv==1.0.1
 
-# Testing (optional but recommended)
+# Testing
 pytest==7.4.4
 pytest-asyncio==0.23.3
 httpx==0.26.0
+pytest-cov==4.1.0

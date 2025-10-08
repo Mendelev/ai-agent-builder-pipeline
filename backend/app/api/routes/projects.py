@@ -7,7 +7,7 @@ from app.models.project import Project, Requirement, RequirementVersion
 from app.schemas.project import (
     ProjectCreate, ProjectRead, ProjectUpdate,
     RequirementsBulkUpsert, RequirementRead, RequirementUpsert,
-    RequirementVersionRead
+    RequirementVersionRead, RequirementUpdateResponse
 )
 from app.services.requirement_service import RequirementService
 from app.core.logging_config import get_logger
@@ -70,7 +70,7 @@ def update_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     
-    update_data = project_update.dict(exclude_unset=True)
+    update_data = project_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(project, field, value)
     
@@ -115,32 +115,49 @@ def get_project_requirements(
     return requirements
 
 
-@router.put("/requirements/{requirement_id}", response_model=RequirementRead)
+@router.put("/requirements/{requirement_id}", response_model=RequirementUpdateResponse)
 def update_requirement_put(
     requirement_id: UUID,
     requirement_data: RequirementUpsert,
     db: Session = Depends(get_db)
 ):
-    """Update requirement (always creates new version)"""
-    logger.info(f"Updating requirement: {requirement_id}")
+    """Update requirement (always creates new version) with validation"""
+    logger.info(
+        "Updating requirement",
+        extra={
+            "requirement_id": str(requirement_id),
+            "code": requirement_data.code
+        }
+    )
     
-    requirement = RequirementService.update_requirement(
+    requirement, validation = RequirementService.update_requirement(
         db=db,
         requirement_id=requirement_id,
         update_data=requirement_data
     )
     
-    logger.info(f"Requirement updated to version {requirement.version}")
-    return requirement
+    logger.info(
+        "Requirement updated",
+        extra={
+            "requirement_id": str(requirement_id),
+            "version": requirement.version,
+            "has_warnings": len(validation.validation_warnings) > 0
+        }
+    )
+    
+    return RequirementUpdateResponse(
+        requirement=requirement,
+        validation=validation
+    )
 
 
-@router.patch("/requirements/{requirement_id}", response_model=RequirementRead)
+@router.patch("/requirements/{requirement_id}", response_model=RequirementUpdateResponse)
 def update_requirement_patch(
     requirement_id: UUID,
     requirement_data: RequirementUpsert,
     db: Session = Depends(get_db)
 ):
-    """Update requirement (always creates new version)"""
+    """Update requirement (always creates new version) with validation"""
     return update_requirement_put(requirement_id, requirement_data, db)
 
 
