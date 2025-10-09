@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Text, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -12,11 +12,13 @@ class Project(Base):
     id = Column(UUID, primary_key=True, default=uuid.uuid4)
     name = Column(Text, nullable=False)
     status = Column(Text, nullable=False, default="DRAFT")
+    requirements_version = Column(Integer, nullable=False, default=1)
     created_by = Column(UUID, nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
     requirements = relationship("Requirement", back_populates="project", cascade="all, delete-orphan")
+    qa_sessions = relationship("QASession", back_populates="project", cascade="all, delete-orphan")
 
 
 class Requirement(Base):

@@ -252,3 +252,62 @@ Verifique se o arquivo `alembic/env.py` está importando os modelos corretamente
 ## 📄 Licença
 
 Este projeto está sob licença MIT.
+
+---
+
+## 🎯 Módulos Implementados
+
+### ✅ R3 - Requirement Refinement (Refino de Requisitos)
+
+Sistema completo de refinamento de requisitos através de Q&A automático com heurísticas inteligentes.
+
+**Características:**
+- ✅ Análise automática de requisitos (testabilidade, ambiguidade, dependências)
+- ✅ Geração de perguntas de clarificação
+- ✅ Processamento assíncrono com Celery
+- ✅ Idempotência via request_id
+- ✅ Versionamento de requisitos
+- ✅ Guard-rails (max_rounds, quality flags)
+- ✅ API REST completa
+
+**Quick Start:**
+```bash
+# 1. Aplicar migration
+alembic upgrade head
+
+# 2. Iniciar Redis
+docker run -d -p 6379:6379 redis:alpine
+
+# 3. Iniciar worker Celery
+./start_worker.sh
+
+# 4. Testar
+python test_r3_example.py
+# ou
+./test_r3_curl.sh
+```
+
+**Documentação:**
+- 📖 [Implementação Completa](R3_IMPLEMENTATION.md)
+- 📋 [Resumo Executivo](R3_SUMMARY.md)
+- 🚀 [Quick Start](R3_QUICKSTART.md)
+
+**Endpoints:**
+- `POST /api/v1/projects/{id}/refine` - Iniciar refinamento
+- `GET /api/v1/projects/{id}/qa-sessions` - Listar sessões de Q&A
+
+**Stack Adicional:**
+- Celery 5.3.4
+- Redis 5.0.1
+
+---
+
+### 🔜 Próximos Módulos
+
+- **O1** - State Machine (LangGraph)
+- **O2** - Auditoria e /tasks
+- **O4** - Idempotência global
+- **C1-C5** - Code Validation
+- **P1-P5** - Planning
+- **PR1-PR4** - Prompt Generation
+- **U1-U6** - React UI
