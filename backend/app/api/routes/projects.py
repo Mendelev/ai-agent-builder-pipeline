@@ -81,6 +81,36 @@ def update_project(
     return project
 
 
+@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project(
+    project_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a project and all associated data.
+    
+    This will cascade delete:
+    - All requirements
+    - All requirement versions
+    - All QA sessions
+    - All gateway audit records
+    """
+    logger.info(f"Deleting project: {project_id}")
+    
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    project_name = project.name
+    
+    # Delete project (CASCADE will handle related records)
+    db.delete(project)
+    db.commit()
+    
+    logger.info(f"Project deleted successfully: {project_name} ({project_id})")
+    return None
+
+
 @router.post("/{project_id}/requirements", response_model=List[RequirementRead])
 def bulk_upsert_requirements(
     project_id: UUID,

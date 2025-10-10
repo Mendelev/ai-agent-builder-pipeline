@@ -46,3 +46,19 @@ class RequirementVersion(Base):
     created_at = Column(DateTime, nullable=False, server_default=func.now())
 
     requirement = relationship("Requirement", back_populates="versions")
+
+
+class RequirementsGatewayAudit(Base):
+    __tablename__ = "requirements_gateway_audit"
+
+    id = Column(UUID, primary_key=True, default=uuid.uuid4)
+    project_id = Column(UUID, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    correlation_id = Column(UUID, nullable=False)
+    request_id = Column(UUID, nullable=False, unique=True)
+    action = Column(Text, nullable=False)
+    from_state = Column(Text, nullable=False)
+    to_state = Column(Text, nullable=False)
+    user_id = Column(UUID, nullable=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+
+    project = relationship("Project")

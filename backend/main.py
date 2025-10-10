@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.routes import projects
 from app.api.routes import qa_sessions
+from app.api.routes import gateway
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -23,6 +24,7 @@ app.add_middleware(
 app.include_router(projects.router, prefix="/api/v1")
 app.include_router(qa_sessions.router, prefix="/api/v1")  # /api/v1/refine
 app.include_router(qa_sessions.projects_router, prefix="/api/v1")  # /api/v1/projects/{id}/qa-sessions
+app.include_router(gateway.router, prefix="/api/v1")  # /api/v1/requirements/{id}/gateway
 
 
 @app.get("/")
