@@ -26,6 +26,9 @@ prompt-toolkit==3.0.52
 # Python utilities
 python-dotenv==1.0.1
 
+# Encryption
+cryptography==41.0.7
+
 # Testing
 pytest==7.4.4
 pytest-asyncio==0.23.3

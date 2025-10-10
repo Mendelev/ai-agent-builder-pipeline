@@ -19,6 +19,7 @@ class Project(Base):
 
     requirements = relationship("Requirement", back_populates="project", cascade="all, delete-orphan")
     qa_sessions = relationship("QASession", back_populates="project", cascade="all, delete-orphan")
+    code_repositories = relationship("CodeRepository", back_populates="project", cascade="all, delete-orphan")
 
 
 class Requirement(Base):

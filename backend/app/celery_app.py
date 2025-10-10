@@ -11,6 +11,7 @@ celery_app = Celery(
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
         "app.tasks.analyst",  # R3: Requirement refinement tasks
+        "app.tasks.git_clone",  # C1: Git repository clone tasks
         # Future: "app.tasks.code_validator",  # C3: Code validation tasks
         # Future: "app.tasks.planner",  # P2: Planning tasks
         # Future: "app.tasks.prompt_generator",  # PR4: Prompt generation tasks
@@ -33,6 +34,7 @@ celery_app.conf.update(
     task_default_queue="default",
     task_routes={
         "app.tasks.analyst.*": {"queue": "q_analyst"},
+        "app.tasks.git_clone.*": {"queue": "celery"},
         # Future routes:
         # "app.tasks.code_validator.*": {"queue": "q_code_validator"},
         # "app.tasks.planner.*": {"queue": "q_planner"},

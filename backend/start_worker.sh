@@ -1,14 +1,23 @@
 #!/bin/bash
 
-# Celery Worker Startup Script for R3 (Requirement Refinement)
+# Celery Worker Startup Script for All Tasks
 
 echo "=========================================="
-echo "  Starting Celery Worker (q_analyst)"
+echo "  Starting Celery Worker (All Queues)"
 echo "=========================================="
 echo ""
 
 # Get script directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Load environment variables from .env if it exists
+if [[ -f "$SCRIPT_DIR/.env" ]]; then
+    echo "ℹ️  Loading environment variables from .env..."
+    export $(cat "$SCRIPT_DIR/.env" | grep -v '^#' | grep -v '^\s*$' | xargs)
+    echo "✓ Environment variables loaded"
+else
+    echo "⚠️  .env file not found - using system environment only"
+fi
 
 # Check if virtual environment is activated, if not try to activate it
 if [[ -z "$VIRTUAL_ENV" ]]; then
@@ -49,15 +58,25 @@ fi
 
 echo "✓ Virtual environment: $VIRTUAL_ENV"
 echo "✓ Redis is accessible on $REDIS_HOST:$REDIS_PORT"
+
+# Check if MASTER_ENCRYPTION_KEY is set
+if [[ -n "$MASTER_ENCRYPTION_KEY" ]]; then
+    echo "✓ Encryption key loaded (${#MASTER_ENCRYPTION_KEY} characters)"
+else
+    echo "⚠️  WARNING: MASTER_ENCRYPTION_KEY not set!"
+    echo "   Token decryption will fail!"
+    echo "   See: c1_tests/SETUP_ENCRYPTION.md"
+fi
+
 echo ""
 
 # Worker configuration
-QUEUE="q_analyst"
-CONCURRENCY=2
+QUEUE="celery,q_analyst"
+CONCURRENCY=4
 LOGLEVEL="info"
 
 echo "Configuration:"
-echo "  Queue: $QUEUE"
+echo "  Queues: $QUEUE"
 echo "  Concurrency: $CONCURRENCY"
 echo "  Log Level: $LOGLEVEL"
 echo ""

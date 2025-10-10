@@ -28,6 +28,19 @@ class Settings(BaseSettings):
     # Feature Flags
     DEV_ALLOW_PARTIAL_OBS: bool = False  # Relaxes warnings, NOT security
     
+    # Git Repository Settings
+    MAX_REPO_SIZE_MB: int = 100
+    GIT_CLONE_TIMEOUT: int = 300  # 5 minutes
+    SANDBOX_BASE_PATH: str = "/tmp/repos"
+    
+    # Encryption Settings
+    MASTER_ENCRYPTION_KEY: Optional[str] = None  # Base64 encoded key
+    KMS_KEY_ID: Optional[str] = None  # For production KMS integration
+    
+    # Celery Settings
+    CELERY_CONCURRENCY: int = 4
+    CELERY_MAX_RETRIES: int = 3
+    
     def get_origins_list(self) -> List[str]:
         """Convert ALLOWED_ORIGINS string to list"""
         if self.ALLOWED_ORIGINS == "*":
